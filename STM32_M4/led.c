@@ -2,25 +2,39 @@
 
 void LED_Init(void)
 {
-	/* 아래 코드 수정 금지 : Port-A Clock Enable */
 	Macro_Set_Bit(RCC->AHB1ENR, 0); 
 
-	Macro_Write_Block(GPIOA->MODER, 0x3, 0x1, 10);
-	Macro_Clear_Bit(GPIOA->OTYPER, 5);
-	Macro_Clear_Bit(GPIOA->ODR, 5); 
+	Macro_Write_Block(GPIOC->MODER, 0x3, 0x1, 10);
+
+	Macro_Clear_Bit(GPIOC->OTYPER, 0);
+	Macro_Clear_Bit(GPIOC->OTYPER, 1);
+	Macro_Clear_Bit(GPIOC->OTYPER, 2);
+	Macro_Clear_Bit(GPIOC->OTYPER, 3);
+	Macro_Clear_Bit(GPIOC->OTYPER, 4);
+	Macro_Clear_Bit(GPIOC->OTYPER, 5);
+	Macro_Clear_Bit(GPIOC->OTYPER, 6);
+
+
+	Macro_Clear_Bit(GPIOC->ODR, 0);
+	Macro_Clear_Bit(GPIOC->ODR, 1);
+	Macro_Clear_Bit(GPIOC->ODR, 2);
+	Macro_Clear_Bit(GPIOC->ODR, 3);
+	Macro_Clear_Bit(GPIOC->ODR, 4);
+	Macro_Clear_Bit(GPIOC->ODR, 5);
+	Macro_Clear_Bit(GPIOC->ODR, 6);
 }
 
-void LED_On(void)
-{
-	Macro_Set_Bit(GPIOA->ODR, 5); 
-}
+// void LED_UpdateAll(uint8_t mask){
+// //??
+// }
 
-void LED_Off(void)
-{
-	Macro_Clear_Bit(GPIOA->ODR, 5); 
-}
+//입차, 출차 led 세팅
+void LED_SetFloor(uint8_t floor, uint8_t state){
+	if(state){
+		Macro_Clear_Bit(GPIOC->ODR, floor);
+	}
+	else{
+		Macro_Set_Bit(GPIOC->ODR, floor);
+	}
 
-void LED_Display(int on)
-{
-	Macro_Write_Block(GPIOA->ODR, 0x1, on & 0x1, 5);
 }
