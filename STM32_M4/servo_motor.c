@@ -23,10 +23,8 @@ void init_servo_motor(void){
     TIM2->CR1   |= (1 << 0);                        // CEN = 1
 }
 
-void Servo_OpenBarrier(void){
+void Servo_MoveBarrier(void){
     TIM2->CCR1 = 1500;  // 1.5ms (90도)
-}
-
-void Servo_CloseBarrier(void){
+    TIM3_Delay(3000);
     TIM2->CCR1 = 1000;  // 1.0ms (0도)
 }
