@@ -23,6 +23,7 @@ void init_servo_motor(void){
     TIM2->CR1   |= (1 << 0);                        // CEN = 1
 }
 
+// 차단기 동작
 void Servo_MoveBarrier(void){
     TIM2->CCR1 = 1500;  // 1.5ms (90도)
     TIM3_Delay(3000);
