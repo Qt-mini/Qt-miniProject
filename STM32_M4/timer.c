@@ -1,15 +1,15 @@
 #include "device_driver.h"
 
-#define TIM3_FREQ 	  			(8000000.) 	      		// Hz
-#define TIM3_TICK	  			(1000000./TIM3_FREQ)	// usec
-#define TIME3_PLS_OF_1ms  		(1000./TIM3_TICK)
+#define TIM3_TIC		20 					//usec
+#define TIM3_FREQ		(1000000./TIM3_TIC) //Hz
+#define TIM3_1ms_PLS 	(TIM3_FREQ/1000.)
 
 void TIM3_Delay(int time){
 	Macro_Set_Bit(RCC->APB1ENR, 1);
 
 	TIM3->CR1 = (1<<4)|(1<<3);
 	TIM3->PSC = (unsigned int)(TIMXCLK/TIM3_FREQ + 0.5)-1;
-	TIM3->ARR = TIME3_PLS_OF_1ms * time;
+	TIM3->ARR = TIM3_1ms_PLS * time;
 
 	Macro_Set_Bit(TIM3->EGR,0);
 	Macro_Clear_Bit(TIM3->SR, 0);
@@ -18,3 +18,4 @@ void TIM3_Delay(int time){
 	while(Macro_Check_Bit_Clear(TIM3->SR, 0));
 	Macro_Clear_Bit(TIM3->CR1, 0);
 }
+
