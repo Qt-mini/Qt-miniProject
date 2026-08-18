@@ -16,7 +16,9 @@ void init_servo_motor(void){
 
     // 4. PWM 모드 1 설정 및 채널 1 출력 켜기
     // OC1M = 110 (PWM Mode 1, 비트 4~6), OC1PE = 1 (Preload Enable, 비트 3)
-    Macro_Write_Block(TIM2->CCMR1, 0xF, 0xD, 3);
+    Macro_Write_Block(TIM2->CCMR1, 0x7, 0x6, 4);
+    Macro_Set_Bit(TIM2->CCMR1, 3);
+
     Macro_Set_Bit(TIM2->CCER, 0);                        // CC1E = 1 (Channel 1 Output Enable)
     
     // 5. 타이머 카운터 활성화 (카운트 시작)
@@ -25,7 +27,7 @@ void init_servo_motor(void){
 
 // 차단기 동작
 void Servo_MoveBarrier(void){
-    TIM2->CCR1 = 1500;  // 1.5ms (90도)
-    TIM3_Delay(3000);
-    TIM2->CCR1 = 1000;  // 1.0ms (0도)
+    TIM2->CCR1 = 1800;  // 1.5ms (90도)
+    TIM3_Delay(5000);
+    TIM2->CCR1 = 800;  // 1.0ms (0도)
 }
