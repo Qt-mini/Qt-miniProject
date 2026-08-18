@@ -30,4 +30,5 @@ void Servo_MoveBarrier(void){
     TIM2->CCR1 = 1800;  // 1.5ms (90도)
     TIM3_Delay(5000);
     TIM2->CCR1 = 800;  // 1.0ms (0도)
+    TIM3_Delay(5000);
 }
