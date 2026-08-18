@@ -18,3 +18,16 @@ void TIM3_Delay(int time){
 	while(Macro_Check_Bit_Clear(TIM3->SR, 0));
 	Macro_Clear_Bit(TIM3->CR1, 0);
 }
+
+volatile int TIM2_timeout = 0;
+volatile int DMA1_STREAM5_DONE = 0;
+
+void TIM2_Stopwatch_Start(void)
+{
+    /* stub for interrupt compatibility; actual stopwatch implementation can be added later */
+}
+
+unsigned int TIM2_Stopwatch_Stop(void)
+{
+    return 0U;
+}

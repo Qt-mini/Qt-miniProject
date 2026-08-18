@@ -1,106 +1,153 @@
-#include "device_driver.h"
-#include <stdio.h>
-#include <stdarg.h>
+#include "stm32f4xx.h"
+#include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 
-void Uart2_Init(int baud)
-{
-  double div;
-  unsigned int mant;
-  unsigned int frac;
+#define UART_RX_BUFFER_SIZE 64
 
-  Macro_Set_Bit(RCC->AHB1ENR, 0);                   // PA2,3
-  Macro_Set_Bit(RCC->APB1ENR, 17);                   // USART2 ON
-  Macro_Write_Block(GPIOA->MODER, 0xf, 0xa, 4);     // PA2,3 => ALT
-  Macro_Write_Block(GPIOA->AFR[0], 0xff, 0x77, 8);  // PA2,3 => AF07
-  Macro_Write_Block(GPIOA->PUPDR, 0xf, 0x5, 4);     // PA2,3 => Pull-Up  
+/* ===================================================================
+ * [0] main.c 자원 참조 (extern 선언)
+ * =================================================================== */
+extern volatile uint8_t  g_slot_occupancy_mask;
+extern volatile uint8_t  g_is_barrier_open;
+extern volatile uint32_t g_barrier_timer;
+extern uint32_t GetTick(void);
+extern int8_t   Slot_FindLowestEmpty(void);
 
-  volatile unsigned int t = GPIOA->LCKR & 0x7FFF;
-  GPIOA->LCKR = (0x1<<16)|t|(0x3<<2);                // Lock PA2, 3 Configuration
-  GPIOA->LCKR = (0x0<<16)|t|(0x3<<2);
-  GPIOA->LCKR = (0x1<<16)|t|(0x3<<2);
-  t = GPIOA->LCKR;
+static char s_rx_buffer[UART_RX_BUFFER_SIZE];
+static uint8_t s_rx_index = 0;
+static char s_cmd_buffer[UART_RX_BUFFER_SIZE];
+static volatile bool s_cmd_ready = false;
 
-  div = PCLK1/(16. * baud);
-  mant = (int)div;
-  frac = (int)((div - mant) * 16. + 0.5);
-  mant += frac >> 4;
-  frac &= 0xf;
+/* ===================================================================
+ * [1] USART2 초기화 및 전송 함수
+ * =================================================================== */
+void UART2_Init(uint32_t pclk1_hz, uint32_t baud) {
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+    RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
 
-  USART2->BRR = (mant<<4)|(frac<<0);
-  USART2->CR1 = (1<<13)|(0<<12)|(0<<10)|(1<<3)|(1<<2);
-  USART2->CR2 = 0<<12;
-  USART2->CR3 = 0;
+    GPIOA->MODER &= ~( (3U << (2 * 2)) | (3U << (3 * 2)) );
+    GPIOA->MODER |=  ( (2U << (2 * 2)) | (2U << (3 * 2)) );
+
+    GPIOA->AFR[0] &= ~( (0xFU << (2 * 4)) | (0xFU << (3 * 4)) );
+    GPIOA->AFR[0] |=  ( (7U << (2 * 4)) | (7U << (3 * 4)) );
+
+    USART2->BRR = (pclk1_hz + (baud / 2U)) / baud;
+
+    USART2->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_RXNEIE | USART_CR1_UE;
+
+    NVIC_SetPriority(USART2_IRQn, 1);
+    NVIC_EnableIRQ(USART2_IRQn);
 }
 
-void Uart1_Init(int baud)
-{
-  double div;
-  unsigned int mant;
-  unsigned int frac;
-
-  Macro_Set_Bit(RCC->AHB1ENR, 0);                   // PA9,10
-  Macro_Set_Bit(RCC->APB2ENR, 4);                   // USART1 ON
-  Macro_Write_Block(GPIOA->MODER, 0xf, 0xa, 18);    // PA9,10 => ALT
-  Macro_Write_Block(GPIOA->AFR[1], 0xff, 0x77, 4);  // PA9,10 => AF07
-  Macro_Write_Block(GPIOA->PUPDR, 0xf, 0x5, 18);    // PA9,10 => Pull-Up
-
-  div = PCLK2 / (16. * baud);
-  mant = (int)div;
-  frac = (int)((div - mant) * 16 + 0.5);
-  mant += frac >> 4;
-  frac &= 0xf;
-  USART1->BRR = (mant<<4)|(frac<<0);
-
-  USART1->CR1 = (1<<13)|(0<<12)|(0<<10)|(1<<3)|(1<<2);
-  USART1->CR2 = 0 << 12;
-  USART1->CR3 = 0;
+void UART2_SendChar(char c) {
+    while (!(USART2->SR & USART_SR_TXE));
+    USART2->DR = (uint8_t)c;
 }
 
-void Uart1_Send_Byte(char data)
-{
-  if(data == '\n')
-  {
-    while(!Macro_Check_Bit_Set(USART1->SR, 7));
-    USART1->DR = 0x0d;
-  }
-
-  while(!Macro_Check_Bit_Set(USART1->SR, 7));
-  USART1->DR = data;
+void UART2_SendString(const char *str) {
+    while (*str) {
+        UART2_SendChar(*str++);
+    }
 }
 
-char Uart1_Get_Char(void)
-{
-	while(!Macro_Check_Bit_Set(USART1->SR, 5));
-	return (char)USART1->DR;
+/* ===================================================================
+ * [2] 수신 버퍼 제어 API
+ * =================================================================== */
+bool UART2_IsCommandReady(void) {
+    return s_cmd_ready;
 }
 
-char Uart1_Get_Pressed(void)
-{
-	if(Macro_Check_Bit_Set(USART1->SR, 5))
-	{
-		return (char)USART1->DR;
-	}
-
-	else
-	{
-		return (char)0;
-	}
+void UART2_GetCommand(char *out_buf) {
+    if (out_buf != NULL) {
+        strcpy(out_buf, s_cmd_buffer);
+    }
+    s_cmd_ready = false;
 }
 
-void Uart2_RX_Interrupt_Enable(int en)
-{
-  if(en)
-  {
-    Macro_Set_Bit(USART2->CR1, 5);
-    NVIC_ClearPendingIRQ(38);
-    NVIC_EnableIRQ(38);
-  }
-  else
-  {
-    Macro_Clear_Bit(USART2->CR1, 5);
-    NVIC_DisableIRQ(38);
-  }
+/* ===================================================================
+ * [3] 수신 명령 파싱 및 처리 로직 (최종 프로토콜 규격 반영)
+ * =================================================================== */
+void UART_ParseCommand(char *cmd) {
+    char tx_buf[64];
+
+    // [1] 입차 요청: "I:<car4>" (예: "I:1234") 또는 하위 호환 "I"
+    if (strncmp(cmd, "I:", 2) == 0 || strcmp(cmd, "I") == 0) {
+        int8_t empty_floor = Slot_FindLowestEmpty();
+        if (empty_floor != -1) {
+            g_slot_occupancy_mask |= (1U << (empty_floor - 1));
+
+            g_is_barrier_open = 1;
+            g_barrier_timer = GetTick();
+
+            snprintf(tx_buf, sizeof(tx_buf), "P:%d\r\n", empty_floor);
+            UART2_SendString(tx_buf);
+        } else {
+            // 만차 시 에러 응답 (E:3)
+            UART2_SendString("E:3\r\n");
+        }
+    }
+    // [2] 정산 완료/출차 요청: "O:<floor>" (예: "O:3")
+    else if (strncmp(cmd, "O:", 2) == 0) {
+        int floor = atoi(cmd + 2);
+
+        // 1) 층 번호 범위 검증 (1~8층 벗어남: 에러 코드 1)
+        if (floor < 1 || floor > 8) {
+            UART2_SendString("E:1\r\n");
+        }
+        // 2) 해당 층이 이미 비어 있는 경우 (빈 슬롯 출차 시도: 에러 코드 2)
+        else if (!(g_slot_occupancy_mask & (1 << (floor - 1)))) {
+            UART2_SendString("E:2\r\n");
+        }
+        // 3) 정상 출차 완료
+        else {
+            g_slot_occupancy_mask &= ~(1U << (floor - 1)); // 슬롯 비움
+
+            g_is_barrier_open = 1;                        // 차단기 개방
+            g_barrier_timer = GetTick();                  // 자동 닫힘 타이머 시작
+
+            // 출차 완료 단일 응답 "E\r\n"
+            UART2_SendString("E\r\n");
+        }
+    }
+    // [3] 슬롯 점유 상태 조회: "?"
+    else if (strcmp(cmd, "?") == 0) {
+        char bitmask[9];
+        // Bit7(8층)부터 Bit0(1층)까지 역순으로 문자열 구성 (예: Bit0=1 -> S:00000001)
+        for (int i = 7; i >= 0; i--) {
+            bitmask[7 - i] = (g_slot_occupancy_mask & (1 << i)) ? '1' : '0';
+        }
+        bitmask[8] = '\0';
+
+        snprintf(tx_buf, sizeof(tx_buf), "S:%s\r\n", bitmask);
+        UART2_SendString(tx_buf);
+    }
+    // [4] 알 수 없는 비정상 명령
+    else {
+        UART2_SendString("E:0\r\n");
+    }
+}
+
+/* ===================================================================
+ * [4] USART2 인터럽트 서비스 루틴 (ISR)
+ * =================================================================== */
+void USART2_IRQHandler(void) {
+    if (USART2->SR & USART_SR_RXNE) {
+        char ch = (char)(USART2->DR & 0xFF);
+
+        if (ch == '\n' || ch == '\r') {
+            if (s_rx_index > 0) {
+                s_rx_buffer[s_rx_index] = '\0';
+                strcpy(s_cmd_buffer, s_rx_buffer);
+                s_cmd_ready = true;
+                s_rx_index = 0;
+            }
+        } else {
+            if (s_rx_index < UART_RX_BUFFER_SIZE - 1) {
+                s_rx_buffer[s_rx_index++] = ch;
+            }
+        }
+    }
 }

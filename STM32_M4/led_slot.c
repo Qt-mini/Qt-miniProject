@@ -4,37 +4,39 @@
 #define FULL_FLOOR    0b11111111
 #define SLOT_ERROR    -1
 
-static unsigned int parking_tower = EMPTY_FLOOR;
+extern volatile uint8_t g_slot_occupancy_mask;
+
 int error_input(int floor);
 
-// 가장낮은 층부터 비어있는 층반환
+// 가장낮은 층부터 비어있는 층반환 (1~8층 기준)
 int Slot_FindLowestEmpty(){
-    if(parking_tower == FULL_FLOOR){
+    if (g_slot_occupancy_mask == FULL_FLOOR) {
         return SLOT_ERROR;
     }
     for (int i = 0; i < 8; i++) {
-        if (Macro_Check_Bit_Clear(parking_tower, i)) {
-            return i; 
+        if ((g_slot_occupancy_mask & (1U << i)) == 0U) {
+            return i + 1;
         }
     }
+    return SLOT_ERROR;
 }
 //입차시 해당층 슬롯 1 설정 
 void Slot_SetOccupied(unsigned int floor){
-    if (error_input(floor) || Macro_Check_Bit_Set(parking_tower, floor)) {
+    if (error_input((int)floor) || (floor >= 8) || (g_slot_occupancy_mask & (1U << floor))) {
         return;
     }
-    Macro_Set_Bit(parking_tower, floor);
+    g_slot_occupancy_mask |= (1U << floor);
 }
 //출차시 해당층 슬롯 0설정 
 void Slot_SetEmpty(unsigned int floor){
-    if (error_input(floor) || Macro_Check_Bit_Clear(parking_tower, floor)) {
+    if (error_input((int)floor) || (floor >= 8) || ((g_slot_occupancy_mask & (1U << floor)) == 0U)) {
         return;
     }
-    Macro_Clear_Bit(parking_tower, floor);
+    g_slot_occupancy_mask &= ~(1U << floor);
 }
 //전체 층 슬롯 반환
 unsigned int get_slot(){
-    return parking_tower;
+    return (unsigned int)g_slot_occupancy_mask;
 }
 
 // 올바르지 못한 층수일때 예외처리
