@@ -23,12 +23,18 @@ void init_servo_motor(void){
     
     // 5. 타이머 카운터 활성화 (카운트 시작)
     Macro_Set_Bit(TIM2->CR1, 0);                        // CEN = 1
+
 }
 
 // 차단기 동작
 void Servo_MoveBarrier(void){
-    TIM2->CCR1 = 1800;  // 1.5ms (90도)
-    TIM3_Delay(5000);
-    TIM2->CCR1 = 800;  // 1.0ms (0도)
-    TIM3_Delay(5000);
+    // TIM2->CCR1 = 800;  // 1.5ms (90도)
+    // TIM3_Delay(1000);
+    // TIM2->CCR1 = 1800;  // 1.0ms (0도)
+    // TIM3_Delay(1000);
+
+    TIM2->CCR1 = 1500;  // 1.5ms (90도 개방)
+    TIM3_Delay(1000);   // 1초 대기
+    TIM2->CCR1 = 1000;  // 1.0ms (0도 폐쇄)
+    TIM3_Delay(1000);   // 1초 대기
 }
