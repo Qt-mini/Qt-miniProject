@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "ultrasonic.h"
 
 /* ===================================================================
  * [1] 외부 함수 선언 (extern)
@@ -62,11 +63,14 @@ uint8_t Button_IsPressed(void) {
  * [5] 메인 루프
  * =================================================================== */
 int Main(void) {
+    CarState previous_state = CAR_NONE;
+    CarState current_state;
+
     SystemCoreClockUpdate();
     SysTick_Init();
     Button_Init();
     LED_Init();
-    
+    Ultrasonic_Init();
 
     // USART2 초기화 (115200bps, 8-N-1)
     UART2_Init(16000000U, 115200U);
@@ -87,5 +91,20 @@ int Main(void) {
             LED_UpdateFromSlots();
             
         }
+
+        Ultrasonic_UpdateCarState();
+
+        current_state = Ultrasonic_GetCarState();
+
+        if(previous_state != current_state)
+        {
+            if(current_state == CAR_DETECTED)
+            {
+                UART2_SendString("D\r\n");
+            }
+
+            previous_state = current_state;
+        }
+        
     }
 }

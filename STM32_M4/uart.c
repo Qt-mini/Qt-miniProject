@@ -113,6 +113,8 @@ void UART_ParseCommand(char *cmd) {
 
             // 출차 완료 단일 응답 "E\r\n"
             UART2_SendString("E\r\n");
+
+            Servo_MoveBarrier();
         }
     }
     // [3] 슬롯 점유 상태 조회: "?"

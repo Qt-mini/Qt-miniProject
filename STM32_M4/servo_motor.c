@@ -31,10 +31,10 @@ void init_servo_motor(void){
 // 차단기 동작
 void Servo_MoveBarrier(void){
     UART2_SendString("DBG:SERVO -> 90deg (open)\r\n");
-    TIM2->CCR1 = 1500;  // 1.5ms (90도)
-    TIM3_Delay(1000);
+    TIM2->CCR1 = 1800;  // 1.5ms (90도)
+    TIM3_Delay(3000);
 
     UART2_SendString("DBG:SERVO -> 0deg (close)\r\n");
-    TIM2->CCR1 = 1000;  // 1.0ms (0도)
+    TIM2->CCR1 = 800;  // 1.0ms (0도)
     TIM3_Delay(1000);
 }
