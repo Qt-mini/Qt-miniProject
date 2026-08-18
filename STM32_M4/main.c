@@ -14,6 +14,9 @@ extern void UART2_SendString(const char *str);
 extern bool UART2_IsCommandReady(void);
 extern void UART2_GetCommand(char *out_buf);
 extern void UART_ParseCommand(char *cmd);
+extern void init_servo_motor(void);
+
+extern void Servo_MoveBarrier(void);
 
 /* ===================================================================
  * [2] 전역 상태 및 타이머 변수
@@ -63,9 +66,12 @@ int Main(void) {
     SysTick_Init();
     Button_Init();
     LED_Init();
+    
 
     // USART2 초기화 (115200bps, 8-N-1)
     UART2_Init(16000000U, 115200U);
+
+    init_servo_motor();
 
     // [프로토콜 R 전송] 부팅 완료 + 초기화 완료 알림
     UART2_SendString("R\r\n");
@@ -79,6 +85,7 @@ int Main(void) {
             UART2_GetCommand(cmd_buffer);
             UART_ParseCommand(cmd_buffer);
             LED_UpdateFromSlots();
+            
         }
     }
 }

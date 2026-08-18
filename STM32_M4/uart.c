@@ -15,6 +15,7 @@ extern volatile uint8_t  g_is_barrier_open;
 extern volatile uint32_t g_barrier_timer;
 extern uint32_t GetTick(void);
 extern int8_t   Slot_FindLowestEmpty(void);
+extern void Servo_MoveBarrier(void);
 
 static char s_rx_buffer[UART_RX_BUFFER_SIZE];
 static uint8_t s_rx_index = 0;
@@ -84,6 +85,8 @@ void UART_ParseCommand(char *cmd) {
 
             snprintf(tx_buf, sizeof(tx_buf), "P:%d\r\n", empty_floor);
             UART2_SendString(tx_buf);
+            Servo_MoveBarrier();
+            
         } else {
             // 만차 시 에러 응답 (E:3)
             UART2_SendString("E:3\r\n");

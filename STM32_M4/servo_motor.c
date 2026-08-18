@@ -1,5 +1,7 @@
 #include "device_driver.h"
 
+extern void UART2_SendString(const char *str);
+
 void init_servo_motor(void){
     // 1. GPIOA 및 TIM2 클럭 인가
     Macro_Set_Bit(RCC->AHB1ENR, 0);     // GPIOA Clock Enable
@@ -10,23 +12,29 @@ void init_servo_motor(void){
     Macro_Write_Block(GPIOA->AFR[0], 0xF, 1, 0);    // PA0 -> AF1 (TIM2_CH1, 4비트 폭)
 
     // 3. 50Hz (20ms) 주기 설정 (96MHz 기준)
-    TIM2->PSC = 95;
+    TIM2->PSC = 15;
     TIM2->ARR = 19999;
     TIM2->CCR1 = 1000;                              // 초기 펄스폭: 1ms (0도)
 
     // 4. PWM 모드 1 설정 및 채널 1 출력 켜기
     // OC1M = 110 (PWM Mode 1, 비트 4~6), OC1PE = 1 (Preload Enable, 비트 3)
-    Macro_Write_Block(TIM2->CCMR1, 0xF, 0xD, 3);
-    Macro_Set_Bit(TIM2->CCER, 1);                        // CC1E = 1 (Channel 1 Output Enable)
-    
+    Macro_Write_Block(TIM2->CCMR1, 0x7, 0x6, 4);
+    Macro_Set_Bit(TIM2->CCMR1, 3);
+
+    Macro_Set_Bit(TIM2->CCER, 0);                        // CC1E = 1 (Channel 1 Output Enable)
 
     // 5. 타이머 카운터 활성화 (카운트 시작)
-    Macro_Set_Bit(TIM2->CR1, 0);
+    Macro_Set_Bit(TIM2->CR1, 0);                        // CEN = 1
+
 }
 
 // 차단기 동작
 void Servo_MoveBarrier(void){
+    UART2_SendString("DBG:SERVO -> 90deg (open)\r\n");
     TIM2->CCR1 = 1500;  // 1.5ms (90도)
-    TIM3_Delay(3000);
+    TIM3_Delay(1000);
+
+    UART2_SendString("DBG:SERVO -> 0deg (close)\r\n");
     TIM2->CCR1 = 1000;  // 1.0ms (0도)
+    TIM3_Delay(1000);
 }
