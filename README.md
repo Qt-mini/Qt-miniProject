@@ -338,58 +338,136 @@ ParkingSystem/
 
 ##  STM32 (C) 명세서
 
-###  전역변수 정의
-| 소스 파일 | 변수 타입 / 스코프 | 변수명 | 초기값 | 설명 |
-| :--- | :--- | :--- | :---: | :--- |
-| `led_slot.c` | `volatile uint8_t` | `g_slot_occupancy_mask` | `0b00000000` | 8개 층 주차 슬롯 점유 상태 비트마스크 |
-| `servo_motor.c` | `volatile uint8_t` | `g_is_barrier_open` | `0` | 차단기 개폐 상태 플래그 |
-| `uart.c` | `extern volatile uint8_t` | `g_slot_occupancy_mask` | - | 주차 슬롯 점유 상태 비트마스크 |
-| `uart.c` | `extern volatile uint8_t` | `g_is_barrier_open` | - | 차단기 개폐 상태 플래그 |
-| `uart.c` | `static char` | `s_rx_buffer[UART_RX_BUFFER_SIZE]` | - | USART2 인터럽트 수신용 임시 링/문자 버퍼 |
-| `uart.c` | `static uint8_t` | `s_rx_index` | `0` | USART2 수신 버퍼 인덱스 포인터 |
-| `uart.c` | `static char` | `s_cmd_buffer[UART_RX_BUFFER_SIZE]` | - | 파싱 대기 중인 완성된 단일 명령어 버퍼 |
-| `uart.c` | `static volatile bool` | `s_cmd_ready` | `false` | 개행 문자 수신으로 명령어 준비 완료 플래그 |
-| `ultrasonic.c` | `volatile uint32_t` | `echo_rise` | `0` | Echo 핀 Rising Edge 캡처 시점의 카운터 값 |
-| `ultrasonic.c` | `volatile uint32_t` | `echo_fall` | `0` | Echo 핀 Falling Edge 캡처 시점의 카운터 값 |
-| `ultrasonic.c` | `volatile uint8_t` | `echo_done` | `0` | Echo 펄스 측정 완료 플래그 (1: 완료, 0: 미완료) |
-| `ultrasonic.c` | `volatile uint8_t` | `echo_state` | `ECHO_WAIT_RISE` | Echo 신호 캡처 상태 머신 (Rising / Falling 대기) |
-| `ultrasonic.c` | `volatile CarState` | `car_state` | `CAR_NONE` | 최종 판정된 차량 감지 상태 (`CAR_NONE` / `CAR_DETECTED`) |
-| `ultrasonic.c` | `uint8_t` | `detect_count` | `0` | 채터링 방지용 연속 감지(≤150mm) 누적 카운트 |
-| `ultrasonic.c` | `uint8_t` | `release_count` | `0` | 채터링 방지용 연속 해제(≥200mm) 누적 카운트 |
+#### 1. `main.c`
+
+#### 전역 변수
+| 변수 타입 / 스코프 | 변수명 | 초기값 | 설명 |
+| :--- | :--- | :---: | :--- |
+| `volatile uint8_t` | `g_slot_occupancy_mask` | `0x00` | 8개 층 주차 슬롯 점유 상태 비트마스크 |
+| `volatile uint8_t` | `g_is_barrier_open` | `0` | 차단기 개폐 상태 플래그 (1: 개방, 0: 닫힘) |
+| `volatile uint32_t` | `g_barrier_timer` | `0` | 차단기 자동 닫힘 타이머 기준 틱값 |
+| `static volatile uint32_t` | `g_tick_count` | `0` | SysTick 1ms 단위 누적 카운터 |
+
+#### 함수 목록
+| 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
+| :---: | :--- | :--- |
+| `int` | `main(void)` | 하드웨어 초기화 후 메인 루프에서 초음파 감지 및 차단기 타이머 폴링 |
+| `void` | `SysTick_Init(void)` | 1ms 주기 SysTick 타이머 인터럽트 설정 및 활성화 |
+| `void` | `SysTick_Handler(void)` | SysTick 인터럽트 발생 시 `g_tick_count` 1ms 단위 누적 증가 |
+| `uint32_t` | `GetTick(void)` | 시스템 시작 후 누적된 1ms 단위 틱 카운트 반환 |
+| `void` | `Button_Init(void)` | 가상 차량 감지용 사용자 버튼(PC13) GPIO 입력 초기화 |
+| `uint8_t` | `Button_IsPressed(void)` | PC13 버튼 눌림 상태 감지 반환 (눌림: 1, 미눌림: 0) |
 
 ---
 
-###  함수 정의
-| 소스 파일 | 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
-| :--- | :---: | :--- | :--- |
-| `main.c` | `int` | `main(void)` | 하드웨어 초기화 후 메인 루프에서 초음파 감지 및 차단기 타이머 폴링 |
-| `ultrasonic.c` | `uint32_t` | `Ultrasonic_ReadDistance(void)` | PB4로 10µs 펄스 발사 후, PB5(Echo) 핀의 High 유지 시간을 측정하여 거리(cm) 환산 반환 |
-| `led.c` | `void` | `LED_Init(void)` | LED 제어용 GPIO 핀 초기화 |
-| `led.c` | `void` | `LED_SetFloor(uint8_t floor, uint8_t state)` | 특정 층(1~8)의 비트를 세트/클리어하고 해당 GPIO 핀 점등(1)/소등(0) |
-| `led_slot.c` | `int` | `Slot_FindLowestEmpty(void)` | 1층부터 탐색하여 가장 낮은 빈 슬롯(층) 반환 |
-| `led_slot.c` | `void` | `Slot_SetOccupied(unsigned int floor)` | 입차 시 해당 층 슬롯 비트를 1로 설정 |
-| `led_slot.c` | `void` | `Slot_SetEmpty(unsigned int floor)` | 출차 시 해당 층 슬롯 비트를 0으로 설정 |
-| `led_slot.c` | `unsigned int` | `get_slot(void)` | 전체 층 슬롯 점유 상태 비트마스크 반환 |
-| `led_slot.c` | `int` | `error_input(int floor)` | 유효하지 않은 층 입력 예외 처리 |
-| `servo_motor.c` | `void` | `init_servo_motor(void)` | 서보모터 PWM 제어를 위한 타이머 및 핀 초기화 |
-| `servo_motor.c` | `void` | `Servo_OpenBarrier(void)` | TIM2_CH1 PWM 펄스를 90°(약 2.0ms)로 변경하여 차단봉 개방 |
-| `servo_motor.c` | `void` | `Servo_CloseBarrier(void)` | TIM2_CH1 PWM 펄스를 0°(약 1.0ms)로 변경하여 차단봉 하강 |
-| `uart.c` | `void` | `UART2_Init(uint32_t pclk1_hz, uint32_t baud)` | GPIOA(PA2-TX, PA3-RX)를 AF7(USART2)로 설정하고 전송 속도 및 수신 인터럽트(RXNEIE) 활성화 |
-| `uart.c` | `void` | `UART2_SendChar(char c)` | USART2 송신 데이터 레지스터(TXE)가 빌 때까지 대기 후 1바이트 전송 |
-| `uart.c` | `void` | `UART2_SendString(const char *str)` | 문자열 종료 문자(`\0`)까지 각 문자를 순차 전송 |
-| `uart.c` | `bool` | `UART2_IsCommandReady(void)` | 개행 문자 수신으로 단일 명령어가 버퍼에 준비되었는지 플래그 반환 |
-| `uart.c` | `void` | `UART2_GetCommand(char *out_buf)` | 수신 완료된 명령어 버퍼를 복사하고 수신 준비 플래그를 `false`로 리셋 |
-| `uart.c` | `void` | `UART_ParseCommand(char *cmd)` | 수신 명령어(`I`, `O:<floor>`, `?`)를 파싱하여 슬롯 및 차단기 제어 후 응답 전송 |
-| `uart.c` | `void` | `USART2_IRQHandler(void)` | RXNE 인터럽트 시 수신 문자를 버퍼에 적재하고, 개행 문자(`\r`, `\n`) 감지 시 완료 플래그 활성화 |
-| `ultrasonic.c` | `static void` | `Ultrasonic_Trig_Init(void)` | PB4 핀을 범용 출력(Push-Pull, 초기 LOW)으로 설정하여 초음파 TRIG 핀 초기화 |
-| `ultrasonic.c` | `static void` | `TIM5_Trig_Init(void)` | 100ms 주기로 10µs의 TRIG 펄스를 발생시키기 위한 TIM5(1MHz, Update/CC1 인터럽트) 초기화 |
-| `ultrasonic.c` | `static void` | `TIM4_Echo_Init(void)` | PB6(AF2/TIM4_CH1)을 Input Capture 모드로 설정하여 Echo 펄스 폭 측정 타이머 초기화 |
-| `ultrasonic.c` | `void` | `Ultrasonic_Init(void)` | GPIOB 클럭 활성화 및 TRIG 핀, TIM5(트리거), TIM4(에코 캡처)를 일괄 초기화 |
-| `ultrasonic.c` | `void` | `TIM5_IRQHandler(void)` | TIM5 Update 시 PB4를 HIGH로 올리고, 10µs 후 Compare 시 LOW로 내려 트리거 펄스 출력 및 측정 상태 리셋 |
-| `ultrasonic.c` | `void` | `TIM4_IRQHandler(void)` | Echo 신호의 Rising/Falling Edge를 순차적으로 캡처하여 시간(`echo_rise`, `echo_fall`) 저장 및 완료 플래그 갱신 |
-| `ultrasonic.c` | `void` | `Ultrasonic_UpdateCarState(void)` | 캡처된 Echo 폭(오버플로우 보정 포함)으로 거리(mm)를 계산하고, 히스테리시스 필터링(3회 연속 판정)을 적용하여 `car_state` 갱신 |
-| `ultrasonic.c` | `CarState` | `Ultrasonic_GetCarState(void)` | 현재 확정된 차량 감지 상태(`car_state`) 반환 |
+#### 2. `uart.c`
+
+####  전역 변수
+| 변수 타입 / 스코프 | 변수명 | 초기값 | 설명 |
+| :--- | :--- | :---: | :--- |
+| `extern volatile uint8_t` | `g_slot_occupancy_mask` | - | 주차 슬롯 점유 상태 비트마스크 참조 |
+| `extern volatile uint8_t` | `g_is_barrier_open` | - | 차단기 개폐 상태 플래그 참조 |
+| `extern volatile uint32_t` | `g_barrier_timer` | - | 차단기 자동 닫힘 타이머 기준 틱값 참조 |
+| `static char` | `s_rx_buffer[UART_RX_BUFFER_SIZE]` | - | USART2 인터럽트 수신용 임시 링/문자 버퍼 |
+| `static uint8_t` | `s_rx_index` | `0` | USART2 수신 버퍼 인덱스 포인터 |
+| `static char` | `s_cmd_buffer[UART_RX_BUFFER_SIZE]` | - | 파싱 대기 중인 완성된 단일 명령어 버퍼 |
+| `static volatile bool` | `s_cmd_ready` | `false` | 개행 문자 수신으로 명령어 준비 완료 플래그 |
+
+#### 함수 목록
+| 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
+| :---: | :--- | :--- |
+| `void` | `UART2_Init(uint32_t pclk1_hz, uint32_t baud)` | GPIOA(PA2-TX, PA3-RX)를 AF7(USART2)로 설정하고 전송 속도 및 수신 인터럽트(RXNEIE) 활성화 |
+| `void` | `UART2_SendChar(char c)` | USART2 송신 데이터 레지스터(TXE)가 빌 때까지 대기 후 1바이트 전송 |
+| `void` | `UART2_SendString(const char *str)` | 문자열 종료 문자(`\0`)까지 각 문자를 순차 전송 |
+| `bool` | `UART2_IsCommandReady(void)` | 개행 문자 수신으로 단일 명령어가 버퍼에 준비되었는지 플래그 반환 |
+| `void` | `UART2_GetCommand(char *out_buf)` | 수신 완료된 명령어 버퍼를 복사하고 수신 준비 플래그를 `false`로 리셋 |
+| `void` | `UART_ParseCommand(char *cmd)` | 수신 명령어(`I`, `O:<floor>`, `?`)를 파싱하여 슬롯 및 차단기 제어 후 응답 전송 |
+| `void` | `USART2_IRQHandler(void)` | RXNE 인터럽트 시 수신 문자를 버퍼에 적재하고, 개행 문자(`\r`, `\n`) 감지 시 완료 플래그 활성화 |
+
 ---
+
+#### 3. `ultrasonic.c`
+
+#### 전역 변수
+| 변수 타입 / 스코프 | 변수명 | 초기값 | 설명 |
+| :--- | :--- | :---: | :--- |
+| `volatile uint32_t` | `echo_rise` | `0` | Echo 핀 Rising Edge 캡처 시점의 카운터 값 |
+| `volatile uint32_t` | `echo_fall` | `0` | Echo 핀 Falling Edge 캡처 시점의 카운터 값 |
+| `volatile uint8_t` | `echo_done` | `0` | Echo 펄스 측정 완료 플래그 (1: 완료, 0: 미완료) |
+| `volatile uint8_t` | `echo_state` | `ECHO_WAIT_RISE` | Echo 신호 캡처 상태 머신 (Rising / Falling 대기) |
+| `volatile CarState` | `car_state` | `CAR_NONE` | 최종 판정된 차량 감지 상태 (`CAR_NONE` / `CAR_DETECTED`) |
+| `uint8_t` | `detect_count` | `0` | 채터링 방지용 연속 감지(≤150mm) 누적 카운트 |
+| `uint8_t` | `release_count` | `0` | 채터링 방지용 연속 해제(≥200mm) 누적 카운트 |
+
+#### 함수 목록
+| 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
+| :---: | :--- | :--- |
+| `static void` | `Ultrasonic_Trig_Init(void)` | PB4 핀을 범용 출력(Push-Pull, 초기 LOW)으로 설정하여 초음파 TRIG 핀 초기화 |
+| `static void` | `TIM5_Trig_Init(void)` | 100ms 주기로 10µs의 TRIG 펄스를 발생시키기 위한 TIM5(1MHz, Update/CC1 인터럽트) 초기화 |
+| `static void` | `TIM4_Echo_Init(void)` | PB6(AF2/TIM4_CH1)을 Input Capture 모드로 설정하여 Echo 펄스 폭 측정 타이머 초기화 |
+| `void` | `Ultrasonic_Init(void)` | GPIOB 클럭 활성화 및 TRIG 핀, TIM5(트리거), TIM4(에코 캡처)를 일괄 초기화 |
+| `uint32_t` | `Ultrasonic_ReadDistance(void)` | PB4로 10µs 펄스 발사 후, Echo 핀의 High 유지 시간을 측정하여 거리(cm) 환산 반환 |
+| `void` | `TIM5_IRQHandler(void)` | TIM5 Update 시 PB4를 HIGH로 올리고, 10µs 후 Compare 시 LOW로 내려 트리거 펄스 출력 및 측정 상태 리셋 |
+| `void` | `TIM4_IRQHandler(void)` | Echo 신호의 Rising/Falling Edge를 순차적으로 캡처하여 시간(`echo_rise`, `echo_fall`) 저장 및 완료 플래그 갱신 |
+| `void` | `Ultrasonic_UpdateCarState(void)` | 캡처된 Echo 폭(오버플로우 보정 포함)으로 거리(mm)를 계산하고, 히스테리시스 필터링(3회 연속 판정)을 적용하여 `car_state` 갱신 |
+| `CarState` | `Ultrasonic_GetCarState(void)` | 현재 확정된 차량 감지 상태(`car_state`) 반환 |
+
+---
+
+#### 4. `led_slot.c`
+
+#### 전역 변수
+| 변수 타입 / 스코프 | 변수명 | 초기값 | 설명 |
+| :--- | :--- | :---: | :--- |
+| `volatile uint8_t` | `g_slot_occupancy_mask` | `0b00000000` | 8개 층 주차 슬롯 점유 상태 비트마스크 |
+
+#### 함수 목록
+| 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
+| :---: | :--- | :--- |
+| `int` | `Slot_FindLowestEmpty(void)` | 1층부터 탐색하여 가장 낮은 빈 슬롯(층) 반환 |
+| `void` | `Slot_SetOccupied(unsigned int floor)` | 입차 시 해당 층 슬롯 비트를 1로 설정 |
+| `void` | `Slot_SetEmpty(unsigned int floor)` | 출차 시 해당 층 슬롯 비트를 0으로 설정 |
+| `unsigned int` | `get_slot(void)` | 전체 층 슬롯 점유 상태 비트마스크 반환 |
+| `int` | `error_input(int floor)` | 유효하지 않은 층 입력 예외 처리 |
+
+---
+
+#### 5. `led.c`
+
+함수 목록
+| 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
+| :---: | :--- | :--- |
+| `void` | `LED_Init(void)` | LED 제어용 GPIO 핀 초기화 |
+| `void` | `LED_SetFloor(uint8_t floor, uint8_t state)` | 특정 층(1~8)의 비트를 세트/클리어하고 해당 GPIO 핀 점등(1)/소등(0) |
+| `void` | `LED_UpdateFromSlots(void)` | `g_slot_occupancy_mask` 비트마스크를 기반으로 8개 층 점유 LED 상태 일괄 반영 |
+
+---
+
+#### 6. `servo_motor.c`
+
+#### 전역 변수
+| 변수 타입 / 스코프 | 변수명 | 초기값 | 설명 |
+| :--- | :--- | :---: | :--- |
+| `volatile uint8_t` | `g_is_barrier_open` | `0` | 차단기 개폐 상태 플래그 (1: 개방, 0: 닫힘) |
+
+#### 함수 목록
+| 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
+| :---: | :--- | :--- |
+| `void` | `init_servo_motor(void)` | 서보모터 PWM 제어를 위한 타이머 및 핀 초기화 |
+| `void` | `Servo_OpenBarrier(void)` | TIM2_CH1 PWM 펄스를 90°(약 2.0ms)로 변경하여 차단봉 개방 |
+| `void` | `Servo_CloseBarrier(void)` | TIM2_CH1 PWM 펄스를 0°(약 1.0ms)로 변경하여 차단봉 하강 |
+| `void` | `Servo_MoveBarrier(void)` | `g_is_barrier_open` 값에 따라 개방 또는 하강 동작 수행 |
+
+---
+
+#### 7. `timer.c`
+
+####  함수 목록
+| 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
+| :---: | :--- | :--- |
+| `void` | `Delay_ms(uint32_t ms)` | SysTick 또는 하드웨어 타이머 기반 밀리초(ms) 단위 지연 |
+| `void` | `Delay_us(uint32_t us)` | 초음파 트리거 및 정밀 제어를 위한 마이크로초(µs) 단위 지연 |
+
 <br>
 <br>
 
