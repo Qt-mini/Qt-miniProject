@@ -378,97 +378,118 @@ uint8_t g_rx_index = 0;
 
 
 
-## STM32_M4 변수 및 함수 정의
 
-| 소스파일 | 타입 | 변수명 | 초기값 |
-| --- | --- | --- | --- |
-| `led_slot.c` | `static unsigned int` | parking_tower | 0b00000000 |
+#  STM32 (C) 명세서
 
-| 소스파일 | 타입(반환) | 함수원형 | 매개변수 | 상세동작설명 |
-| --- | --- | --- | --- | --- |
-| `main.c` | `int` | main(void) | x | 하드웨어 초기화 후 메인 루프에서 초음파 감지 및 차단기 타이머 폴링 |
-| `ultrasonic.c` |  | Ultrasonic_ReadDistance(void) | x | PB4로 10µs 펄스 발사 후, PB5 Echo 핀의 High 유지 시간을 측정하여 거리(cm) 환산 반환 |
-| `led.c` |  | LED_SetFloor(uint8_t floor, uint8_t state) | uint8_t floor, uint8_t state | 특정 층(1~8)의 비트를 세트/클리어하고 해당 GPIO 핀 점등(1)/소등(0) |
-|  |  | LED_Init(void) | x | LED 초기화 |
-| `led_slot.c` | `int` | Slot_FindLowestEmpty() | x | 가장 낮은 층부터 비어있는 층 반환 |
-|  |  | Slot_SetOccupied(unsigned int floor) | unsigned int floor | 입차시 해당 층 슬롯 1 설정 |
-|  |  | Slot_SetEmpty(unsigned int floor) | unsigned int floor | 출차시 해당 층 슬롯 0설정 |
-|  | `unsigned int` | get_slot() | x | 전체 층 슬롯 반환 |
-|  | `int` | error_input(int floor) | int floor |  |
-| `servo_motor.c` |  | Servo_OpenBarrier(void) | x | TIM2_CH1 PWM 펄스를 90°(약 2.0ms)로 변경하여 차단봉 개방 |
-|  |  | init_servo_motor(void) | x | 서보모터 초기설정 |
-|  |  | Servo_CloseBarrier(void) | x | TIM2_CH1 PWM 펄스를 0°(약 1.0ms)로 변경하여 차단봉 하강 |
-| `uart.c` |  | UART2_Init | uint32_t pclk1_hz, uint32_t baud | GPIOA(PA2-TX, PA3-RX)를 AF7(USART2)로 설정하고 전송 속도(BRR) 및 수신 인터럽트(RXNEIE)를 활성화한다. |
-|  |  | UART2_SendChar | char c | USART2 송신 데이터 레지스터(TXE)가 빌 때까지 대기한 후 1바이트 문자를 전송한다. |
-|  |  | UART2_SendString | const char *str | 널 문자(`\0`)를 만날 때까지 문자열을 구성하는 각 문자를 `UART2_SendChar`를 통해 순차 전송한다. |
-|  | `bool` | UART2_IsCommandReady | x | 개행 문자 수신으로 단일 명령어가 버퍼에 준비되었는지 여부(`s_cmd_ready`)를 반환한다. |
-|  |  | UART2_GetCommand | char *out_buf | 수신 완료된 명령어 버퍼 내용을 `out_buf`로 복사하고 수신 준비 플래그를 `false`로 리셋한다. |
-|  |  | UART_ParseCommand | char *cmd | 수신 명령어(입차 `I`, 출차 `O:<floor>`, 조회 `?`)를 파싱하여 슬롯 상태 및 차단기를 제어하고 규격 응답(`P:<floor>`, `E:x`, `S:<mask >`, `E`)을 전송한다. |
-|  |  | USART2_IRQHandler | x | USART2 RXNE 인터럽트 발생 시 수신 문자를 버퍼에 적재하고, 개행 문자(`\r`, `\n`) 감지 시 명령어 수신 완료 플래그를 활성화한다. |
+### 📌 전역 변수 정의
+| 소스 파일 | 변수 타입 | 변수명 | 초기값 | 설명 |
+| :--- | :--- | :--- | :---: | :--- |
+| `led_slot.c` | `static unsigned int` | `parking_tower` | `0b00000000` | 8개 층 주차 슬롯 점유 상태 비트마스크 |
 
-## QT 변수 및 함수 정의
+---
 
-| **소스 파일** | **클래스** | **접근 지정자** | **타입 (반환 타입)** | **변수명 / 함수명** | **초기값 / 매개변수** |
-| --- | --- | --- | --- | --- | --- |
-| car.cpp | `Car` | `private` | QString | carNumber  | x |
-|  | `Car` | `private` | int | floor | x |
-|  | `Car` | `private` | QDateTime | entryTime  | x |
-| parkingmanager.cpp | `ParkingManager` | `private` | QVector<Car> | cars  | x |
-|  | `ParkingManager` | `private` | quint8 | slotStatus  | 0b00000000 |
+### 📌 함수 정의
+| 소스 파일 | 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
+| :--- | :---: | :--- | :--- |
+| `main.c` | `int` | `main(void)` | 하드웨어 초기화 후 메인 루프에서 초음파 감지 및 차단기 타이머 폴링 |
+| `ultrasonic.c` | `uint32_t` | `Ultrasonic_ReadDistance(void)` | PB4로 10µs 펄스 발사 후, PB5(Echo) 핀의 High 유지 시간을 측정하여 거리(cm) 환산 반환 |
+| `led.c` | `void` | `LED_Init(void)` | LED 제어용 GPIO 핀 초기화 |
+| `led.c` | `void` | `LED_SetFloor(uint8_t floor, uint8_t state)` | 특정 층(1~8)의 비트를 세트/클리어하고 해당 GPIO 핀 점등(1)/소등(0) |
+| `led_slot.c` | `int` | `Slot_FindLowestEmpty(void)` | 1층부터 탐색하여 가장 낮은 빈 슬롯(층) 반환 |
+| `led_slot.c` | `void` | `Slot_SetOccupied(unsigned int floor)` | 입차 시 해당 층 슬롯 비트를 1로 설정 |
+| `led_slot.c` | `void` | `Slot_SetEmpty(unsigned int floor)` | 출차 시 해당 층 슬롯 비트를 0으로 설정 |
+| `led_slot.c` | `unsigned int` | `get_slot(void)` | 전체 층 슬롯 점유 상태 비트마스크 반환 |
+| `led_slot.c` | `int` | `error_input(int floor)` | 유효하지 않은 층 입력 예외 처리 |
+| `servo_motor.c` | `void` | `init_servo_motor(void)` | 서보모터 PWM 제어를 위한 타이머 및 핀 초기화 |
+| `servo_motor.c` | `void` | `Servo_OpenBarrier(void)` | TIM2_CH1 PWM 펄스를 90°(약 2.0ms)로 변경하여 차단봉 개방 |
+| `servo_motor.c` | `void` | `Servo_CloseBarrier(void)` | TIM2_CH1 PWM 펄스를 0°(약 1.0ms)로 변경하여 차단봉 하강 |
+| `uart.c` | `void` | `UART2_Init(uint32_t pclk1_hz, uint32_t baud)` | GPIOA(PA2-TX, PA3-RX)를 AF7(USART2)로 설정하고 전송 속도 및 수신 인터럽트(RXNEIE) 활성화 |
+| `uart.c` | `void` | `UART2_SendChar(char c)` | USART2 송신 데이터 레지스터(TXE)가 빌 때까지 대기 후 1바이트 전송 |
+| `uart.c` | `void` | `UART2_SendString(const char *str)` | 문자열 종료 문자(`\0`)까지 각 문자를 순차 전송 |
+| `uart.c` | `bool` | `UART2_IsCommandReady(void)` | 개행 문자 수신으로 단일 명령어가 버퍼에 준비되었는지 플래그 반환 |
+| `uart.c` | `void` | `UART2_GetCommand(char *out_buf)` | 수신 완료된 명령어 버퍼를 복사하고 수신 준비 플래그를 `false`로 리셋 |
+| `uart.c` | `void` | `UART_ParseCommand(char *cmd)` | 수신 명령어(`I`, `O:<floor>`, `?`)를 파싱하여 슬롯 및 차단기 제어 후 응답 전송 |
+| `uart.c` | `void` | `USART2_IRQHandler(void)` | RXNE 인터럽트 시 수신 문자를 버퍼에 적재하고, 개행 문자(`\r`, `\n`) 감지 시 완료 플래그 활성화 |
 
-| 소스 파일 | 클래스 | 접근 지정자 | 타입 | 함수명 | 매개변수 | 상세동작 설명 |
-| --- | --- | --- | --- | --- | --- | --- |
-| car.cpp | `Car` | `public` | 생성자 | Car | const QString &carNumber, int floor | 차량번호와 주차 층을 저장하고 현재 시간을 입차시간으로 설정한다. 출차시간은 초기화한다. |
-|  | `Car` | `public` | 생성자 | Car | const QString &carNumber, int floor, const QDateTime &entryTime | 저장된 주차 기록 복원 시 사용한다. 차량번호, 주차 층, 기존 입차시간을 이용해 차량 객체를 생성한다. |
-|  | `Car` | `public` | QString | getCarNumber | x | 차량번호를 반환한다. |
-|  | `Car` | `public` | int | getFloor | x | 차량이 주차된 층을 반환한다. |
-|  | `Car` | `public` | QDateTime | getEntryTime | x | 차량의 입차시간을 반환한다. |
-|  | `Car` | `public` | QDateTime | getExitTime | x | 차량의 출차시간을 반환한다. |
-|  | `Car` | `public` | void | setExitTime | const QDateTime &exitTime | 차량의 출차시간을 설정한다. |
-|  |  |  |  |  |  |  |
-| parkingmanager.cpp | `ParkingManager` | `public` | bool | addCar | const QString &carNumber, int floor | 차량번호와 배정된 층을 이용해 Car 객체를 생성하고 현재 주차 차량 목록에 추가한다. |
-|  | `ParkingManager` | `public` | Car * | findCar | const QString &carNumber | 차량번호가 일치하는 현재 주차 차량을 검색하고 해당 객체의 포인터를 반환한다. |
-|  | `ParkingManager` | `public` | QVector<Car *> | findCarByLastFour | const QString &lastFour | 차량번호 뒤 4자리가 일치하는 현재 주차 차량들을 검색하여 반환한다. |
-|  | `ParkingManager` | `public` | bool | removeCar | const QString &carNumber | 출차 완료된 차량을 현재 주차 차량 목록에서 제거한다. |
-|  | `ParkingManager` | `public` | qint64 | calculateParkingTime | const QString &carNumber, const QDateTime &exitTime | 차량의 입차시간과 출차시간 차이를 초 단위로 계산한다. |
-|  | `ParkingManager` | `public` | int | calculateFee | qint64 parkingTime | 주차시간을 기준으로 주차요금을 계산한다. |
-|  | `ParkingManager` | `public` | void | setSlotStatus | quint8 status | STM32에서 수신한 8비트 슬롯 점유 상태를 저장한다. |
-|  | `ParkingManager` | `public` | quint8 | getSlotStatus | x | 현재 저장된 슬롯 점유 상태를 반환한다. |
-|  | `ParkingManager` | `public` | bool | isFull | x | 8개의 주차 슬롯이 모두 사용 중인지 확인한다. |
-|  | `ParkingManager` | `public` | int | getAvailableCount | x | 슬롯 상태를 이용해 현재 주차 가능한 슬롯 수를 계산한다. |
-|  | `ParkingManager` | `public` | bool | isOccupied | int floor | 지정한 층이 현재 점유되어 있는지 확인한다. |
-|  | `ParkingManager` | `public` | bool | saveParkingRecord | const QString &carNumber | 차량의 입차/출차 정보를 CSV 파일에 저장한다. |
-|  | `ParkingManager` | `public` | void | loadParkingCars | x | 프로그램 시작 시 CSV 파일들을 읽어 출차하지 않은 차량의 Car 객체를 복원한다. |
-|  | `ParkingManager` | `public` | quint8 | getStoredSlotStatus | x | CSV에서 복원된 차량들의 층 정보를 이용해 Qt 측의 8비트 슬롯 점유 상태를 생성한다. |
-|  |  |  |  |  |  |  |
-| serialmanager.cpp | `SerialManager` | `public` | 생성자 | SerialManager | QObject *parent | QSerialPort의 readyRead signal과 데이터 수신 함수를 연결한다. |
-|  | `SerialManager` | `public` | bool | open | const QString &portName | 지정된 COM Port를 115200 baud, 8N1 조건으로 설정하고 UART 통신을 시작한다. |
-|  | `SerialManager` | `public` | void | close | x | 열려 있는 Serial Port를 닫는다. |
-|  | `SerialManager` | `public` | bool | isOpen | x | Serial Port의 연결 여부를 반환한다. |
-|  | `SerialManager` | `public` | void | sendData | const QString &data | 문자열 뒤에 \r\n을 추가하여 UART로 송신한다. |
-|  | `SerialManager` | `private` | void | receiveData | x | UART 수신 데이터를 버퍼에 저장하고 \r\n 단위로 하나의 명령을 분리한다. |
-|  | `SerialManager` | `private` | void | parseReceivedData | const QByteArray &data | 수신된 UART 명령을 분석하여 READY, 슬롯 상태, 차량 감지, 입차 완료, 출차 완료 등의 signal을 발생시킨다. |
-|  |  |  |  |  |  |  |
-| serialmanager.h | `SerialManager` | `signals` | signal | readyReceived | x | STM32의 READY 신호 R이 수신되었음을 MainWindow에 전달한다. |
-|  | `SerialManager` | `signals` | signal | slotStatusReceived | quint8 status | STM32에서 수신한 8비트 슬롯 상태를 MainWindow에 전달한다. |
-|  | `SerialManager` | `signals` | signal | detectedReceived | x | STM32에서 차량 접근 감지 D가 수신되었음을 전달한다. |
-|  | `SerialManager` | `signals` | signal | parkedReceived | int floor | STM32의 입차 완료 신호와 배정된 주차 층을 전달한다. |
-|  | `SerialManager` | `signals` | signal | exitedReceived | x | STM32의 출차 완료 신호 E가 수신되었음을 전달한다. |
-|  |  |  |  |  |  |  |
-| mainwindow.cpp | `MainWindow` | `public` | 생성자 | MainWindow | QWidget *parent | UI와 SerialManager signal/slot을 초기화하고 CSV에 저장된 현재 주차 차량 정보를 복원한다. |
-|  | `MainWindow` | `private` | void | updateHomeStatus | x | ParkingManager의 슬롯 상태를 이용해 주차 가능 대수, 슬롯 이미지 및 홈 화면 버튼 상태를 갱신한다. |
-|  | `MainWindow` | `private slot` | void | onSerialReady | x | STM32의 READY 신호를 수신하면 ? 명령을 송신하여 초기 슬롯 상태를 요청한다. |
-|  | `MainWindow` | `private slot` | void | onSlotStatusReceived | quint8 stmStatus | STM32 슬롯 상태와 CSV 기반 슬롯 상태를 비교하고, 실제 슬롯 상태를 갱신한 후 홈 화면을 업데이트한다. |
-|  | `MainWindow` | `private slot` | void | onDetectedReceived | x | 차량 접근 신호 D 수신 시 만차가 아니면 홈 화면의 입차 버튼을 활성화한다. |
-|  | `MainWindow` | `private slot` | void | on_btnEntryRequest_clicked | x | 입력된 차량번호의 형식을 확인하고 STM32에 입차 요청 I를 송신한다. 중복 요청 방지를 위해 입차 요청 버튼을 비활성화한다. |
-|  | `MainWindow` | `private slot` | void | onParkedReceived | int floor | STM32에서 배정 층과 입차 완료 신호를 받으면 차량 객체를 등록하고 입차 기록을 저장한 뒤 입차 완료 화면을 표시한다. |
-|  | `MainWindow` | `private` | void | clearEntryData | x | 입차 차량번호 입력창, 입차 완료 정보 및 관련 UI 상태를 초기화한다. |
-|  | `MainWindow` | `private slot` | void | on_btnEntryToHome_clicked | x | 입차 관련 데이터를 초기화하고 STM32에 ?를 전송하여 최신 슬롯 상태를 받은 후 홈으로 돌아가도록 한다. |
-|  | `MainWindow` | `private slot` | void | on_btnExitSearch_clicked | x | 입력된 차량번호 뒤 4자리와 일치하는 현재 주차 차량을 검색하여 목록에 표시한다. |
-|  | `MainWindow` | `private slot` | void | on_btnExitRequest_clicked | x | 선택한 차량의 출차시간, 주차시간 및 요금을 계산하고 정산 화면에 표시한다. |
-|  | `MainWindow` | `private slot` | void | on_btnPaymentRequest_clicked | x | 출차시간을 확정하고 주차 기록을 저장한 뒤 해당 차량의 층 정보를 이용해 STM32에 출차 요청 O:층을 송신한다. |
-|  | `MainWindow` | `private slot` | void | onExitedReceived | x | STM32의 출차 완료 E를 수신하면 차량 객체를 삭제하고 출차 완료 화면을 표시한다. 일정 시간 후 최신 슬롯 상태를 요청한다. |
-|  | `MainWindow` | `private` | void | clearExitData | x | 선택 차량, 출차시간, 검색 결과, 정산 정보 및 관련 UI 상태를 초기화한다. |
-|  | `MainWindow` | `private slot` | void | on_btnExitToHome_clicked | x | 출차 검색 정보를 초기화하고 최신 슬롯 상태를 요청하여 홈으로 돌아간다. |
-|  | `MainWindow` | `private slot` | void | on_btnPaymentToExit_clicked | x | 진행 중이던 정산 정보를 초기화하고 출차 검색 화면으로 돌아간다. |
-|  | `MainWindow` | `private slot` | void | on_btnPaymentToHome_clicked | x | 정산 관련 데이터를 초기화하고 최신 슬롯 상태를 요청하여 홈 화면으로 돌아간다. |
+---
+
+# Qt 주차 관리 시스템 (C++) 명세서
+
+### 📌 클래스 멤버 변수 정의
+| 소스 파일 | 클래스 | 접근 지정자 | 타입 | 변수명 | 초기값 | 설명 |
+| :--- | :--- | :---: | :--- | :--- | :---: | :--- |
+| `car.cpp` | `Car` | `private` | `QString` | `carNumber` | - | 차량 번호 |
+| `car.cpp` | `Car` | `private` | `int` | `floor` | - | 주차된 층 |
+| `car.cpp` | `Car` | `private` | `QDateTime` | `entryTime` | - | 입차 일시 |
+| `parkingmanager.cpp` | `ParkingManager` | `private` | `QVector<Car>` | `cars` | - | 현재 주차 중인 차량 목록 |
+| `parkingmanager.cpp` | `ParkingManager` | `private` | `quint8` | `slotStatus` | `0b00000000` | 8비트 슬롯 점유 상태 |
+
+---
+
+### 📌 클래스 멤버 함수 정의
+
+#### 🔹 `Car` 클래스 (`car.cpp`)
+| 접근 지정자 | 반환 타입 | 함수명 (매개변수) | 상세 동작 설명 |
+| :---: | :---: | :--- | :--- |
+| `public` | 생성자 | `Car(const QString &carNumber, int floor)` | 차량번호와 층을 저장하고 현재 시간을 입차시간으로 설정 |
+| `public` | 생성자 | `Car(const QString &carNumber, int floor, const QDateTime &entryTime)` | 기존 기록 복원용 생성자 (차량번호, 층, 기존 입차시간) |
+| `public` | `QString` | `getCarNumber()` | 차량번호 반환 |
+| `public` | `int` | `getFloor()` | 주차된 층 반환 |
+| `public` | `QDateTime` | `getEntryTime()` | 입차시간 반환 |
+| `public` | `QDateTime` | `getExitTime()` | 출차시간 반환 |
+| `public` | `void` | `setExitTime(const QDateTime &exitTime)` | 출차시간 설정 |
+
+#### 🔹 `ParkingManager` 클래스 (`parkingmanager.cpp`)
+| 접근 지정자 | 반환 타입 | 함수명 (매개변수) | 상세 동작 설명 |
+| :---: | :---: | :--- | :--- |
+| `public` | `bool` | `addCar(const QString &carNumber, int floor)` | `Car` 객체를 생성하여 주차 목록(`cars`)에 추가 |
+| `public` | `Car *` | `findCar(const QString &carNumber)` | 전체 차량번호가 일치하는 주차 차량 포인터 반환 |
+| `public` | `QVector<Car *>` | `findCarByLastFour(const QString &lastFour)` | 차량번호 뒤 4자리가 일치하는 주차 차량 목록 반환 |
+| `public` | `bool` | `removeCar(const QString &carNumber)` | 출차 완료된 차량을 목록에서 제거 |
+| `public` | `qint64` | `calculateParkingTime(const QString &carNumber, const QDateTime &exitTime)` | 입차시간과 출차시간 차이를 초 단위로 계산 |
+| `public` | `int` | `calculateFee(qint64 parkingTime)` | 주차 시간을 기준으로 요금 계산 |
+| `public` | `void` | `setSlotStatus(quint8 status)` | STM32에서 수신한 8비트 슬롯 상태 저장 |
+| `public` | `quint8` | `getSlotStatus()` | 현재 슬롯 상태 반환 |
+| `public` | `bool` | `isFull()` | 8개 주차 슬롯 만차 여부 확인 |
+| `public` | `int` | `getAvailableCount()` | 주차 가능한 잔여 슬롯 수 계산 및 반환 |
+| `public` | `bool` | `isOccupied(int floor)` | 특정 층의 점유 여부 확인 |
+| `public` | `bool` | `saveParkingRecord(const QString &carNumber)` | 입/출차 정보를 CSV 파일에 저장 |
+| `public` | `void` | `loadParkingCars()` | CSV 파일에서 미출차 차량 데이터를 읽어 복원 |
+| `public` | `quint8` | `getStoredSlotStatus()` | 복원된 차량들의 층 정보를 기반으로 Qt 측 8비트 슬롯 상태 생성 |
+
+#### 🔹 `SerialManager` 클래스 (`serialmanager.cpp` / `serialmanager.h`)
+| 분류 | 반환 타입 | 함수명 / 시그널 (매개변수) | 상세 동작 설명 |
+| :---: | :---: | :--- | :--- |
+| `public` | 생성자 | `SerialManager(QObject *parent)` | `QSerialPort`의 `readyRead` 시그널 연결 |
+| `public` | `bool` | `open(const QString &portName)` | 지정 COM Port를 115200 baud, 8N1 조건으로 오픈 |
+| `public` | `void` | `close()` | Serial Port 닫기 |
+| `public` | `bool` | `isOpen()` | Serial Port 연결 상태 확인 |
+| `public` | `void` | `sendData(const QString &data)` | 문자열 뒤에 `\r\n`을 붙여 UART 송신 |
+| `private` | `void` | `receiveData()` | 수신 데이터를 버퍼링하고 `\r\n` 단위로 명령어 분리 |
+| `private` | `void` | `parseReceivedData(const QByteArray &data)` | 수신 명령 분석 후 적절한 시그널 발생 |
+| **`signals`** | `signal` | `readyReceived()` | STM32의 `READY`(`R`) 신호 수신 알림 |
+| **`signals`** | `signal` | `slotStatusReceived(quint8 status)` | STM32의 8비트 슬롯 상태 수신 알림 |
+| **`signals`** | `signal` | `detectedReceived()` | 차량 접근 감지(`D`) 신호 수신 알림 |
+| **`signals`** | `signal` | `parkedReceived(int floor)` | 입차 완료 신호 및 배정 층 수신 알림 |
+| **`signals`** | `signal` | `exitedReceived()` | 출차 완료 신호(`E`) 수신 알림 |
+
+#### 🔹 `MainWindow` 클래스 (`mainwindow.cpp`)
+| 접근 지정자 | 반환 타입 | 함수명 (매개변수) | 상세 동작 설명 |
+| :---: | :---: | :--- | :--- |
+| `public` | 생성자 | `MainWindow(QWidget *parent)` | UI 및 시그널/슬롯 초기화, CSV 주차 정보 복원 |
+| `private` | `void` | `updateHomeStatus()` | 잔여 대수, 슬롯 이미지 및 홈 버튼 상태 갱신 |
+| `private` | `void` | `clearEntryData()` | 입차 차량번호 입력창 및 관련 UI 초기화 |
+| `private` | `void` | `clearExitData()` | 출차 검색 결과, 정산 정보 및 UI 초기화 |
+| `private slot` | `void` | `onSerialReady()` | `R` 수신 시 `?` 명령을 송신하여 슬롯 상태 요청 |
+| `private slot` | `void` | `onSlotStatusReceived(quint8 stmStatus)` | STM32와 CSV 슬롯 상태 동기화 및 홈 UI 갱신 |
+| `private slot` | `void` | `onDetectedReceived()` | `D` 수신 시 만차가 아니면 입차 버튼 활성화 |
+| `private slot` | `void` | `on_btnEntryRequest_clicked()` | 번호 유효성 검사 후 `I` 명령 송신 및 버튼 비활성화 |
+| `private slot` | `void` | `onParkedReceived(int floor)` | 배정 층 수신 시 차량 등록/저장 후 입차 완료 화면 전환 |
+| `private slot` | `void` | `on_btnEntryToHome_clicked()` | 입차 데이터 초기화, `?` 송신 후 홈 화면 이동 |
+| `private slot` | `void` | `on_btnExitSearch_clicked()` | 번호 뒤 4자리 검색 결과 리스트 표시 |
+| `private slot` | `void` | `on_btnExitRequest_clicked()` | 출차 시간, 주차 시간, 요금 계산 후 정산 화면 표시 |
+| `private slot` | `void` | `on_btnPaymentRequest_clicked()` | 출차 기록 확정 저장 후 `O:층` 명령 송신 |
+| `private slot` | `void` | `onExitedReceived()` | `E` 수신 시 차량 삭제 및 출차 완료 화면 표시 |
+| `private slot` | `void` | `on_btnExitToHome_clicked()` | 검색 데이터 초기화, `?` 송신 후 홈 이동 |
+| `private slot` | `void` | `on_btnPaymentToExit_clicked()` | 정산 데이터 초기화 후 출차 검색 화면으로 복귀 |
+| `private slot` | `void` | `on_btnPaymentToHome_clicked()` | 정산 데이터 초기화, `?` 송신 후 홈 이동 |
