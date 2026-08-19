@@ -1,0 +1,1452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>960</width>
+    <height>640</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>960</width>
+    <height>640</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>960</width>
+    <height>640</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>Pretendard</family>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Parking Tower</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QMainWindow, QWidget { background-color: #F4F5F7; color: #17191C; }
+QLabel { background: transparent; }
+QPushButton { background-color: white; border: 1px solid #D9DDE3; border-radius: 14px; padding: 8px 18px; }
+QPushButton:hover { background-color: #F0F4FF; border: 2px solid #4C7DFF; }
+QPushButton:pressed { background-color: #E5ECFF; }
+QLineEdit { background-color: white; border: 2px solid #D9DDE3; border-radius: 12px; padding: 8px 14px; selection-background-color: #4C7DFF; }
+QListWidget { background-color: white; border: 2px solid #D9DDE3; border-radius: 12px; padding: 8px; }
+QListWidget::item { padding: 8px; }
+QFrame#card { background-color: white; border: 1px solid #E0E3E8; border-radius: 18px; }
+QFrame#floorCard { background-color: white; border: 1px solid #E0E3E8; border-radius: 18px; }
+QFrame#floorRow { background-color: #F7F8FA; border-radius: 9px; }
+QLabel#lblSlot8, QLabel#lblSlot7, QLabel#lblSlot6, QLabel#lblSlot5, QLabel#lblSlot4, QLabel#lblSlot3, QLabel#lblSlot2, QLabel#lblSlot1 { background-color: #55B77A; border-radius: 9px; min-width: 18px; max-width: 18px; min-height: 18px; max-height: 18px; }
+QPushButton#btnEntry, QPushButton#btnExit { border: none; border-radius: 18px; font-size: 26pt; font-weight: 700; }
+QPushButton#btnEntry { background-color: #315FEA; color: white; }
+QPushButton#btnEntry:hover { background-color: #234ED0; }
+QPushButton#btnExit { background-color: #24282E; color: white; }
+QPushButton#btnExit:hover { background-color: #111418; }
+QPushButton#btnEntryRequest, QPushButton#btnExitRequest, QPushButton#btnExitSearch, QPushButton#btnPaymentRequest { background-color: #315FEA; color: white; border: none; border-radius: 12px; font-weight: 700; }
+QPushButton#btnEntryToHome, QPushButton#btnExitToHome, QPushButton#btnPaymentToExit, QPushButton#btnPaymentToHome { background-color: transparent; border: 1px solid #D9DDE3; }
+QPushButton#btnEntryRequest:hover, QPushButton#btnExitRequest:hover, QPushButton#btnExitSearch:hover, QPushButton#btnPaymentRequest:hover { background-color: #234ED0; }
+  </string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QStackedWidget" name="stackedWidget">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>10</y>
+      <width>900</width>
+      <height>591</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="pageHome">
+     <widget class="QLabel" name="lblTitle">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>18</y>
+        <width>300</width>
+        <height>38</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>20</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>PARKING TOWER</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblHomeSubTitle">
+      <property name="geometry">
+       <rect>
+        <x>32</x>
+        <y>55</y>
+        <width>300</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard Black</family>
+        <pointsize>11</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color:#6B717A;</string>
+      </property>
+      <property name="text">
+       <string>주차 현황을 확인하고 입·출차를 선택하세요</string>
+      </property>
+     </widget>
+     <widget class="QFrame" name="card">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>100</y>
+        <width>490</width>
+        <height>270</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <widget class="QLabel" name="lblAvailableTitle">
+       <property name="geometry">
+        <rect>
+         <x>35</x>
+         <y>30</y>
+         <width>420</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Pretendard</family>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color:#555B64;</string>
+       </property>
+       <property name="text">
+        <string>현재 주차 가능 대수</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lblAvailableCount">
+       <property name="geometry">
+        <rect>
+         <x>35</x>
+         <y>67</y>
+         <width>220</width>
+         <height>105</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Pretendard</family>
+         <pointsize>58</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color:#315FEA;</string>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lblAvailableUnit">
+       <property name="geometry">
+        <rect>
+         <x>255</x>
+         <y>110</y>
+         <width>100</width>
+         <height>50</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Pretendard</family>
+         <pointsize>20</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>대</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lblParkingStatus">
+       <property name="geometry">
+        <rect>
+         <x>35</x>
+         <y>195</y>
+         <width>420</width>
+         <height>42</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Pretendard</family>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color:#55A873; background:#EDF8F1; border-radius:10px; padding-left:12px;</string>
+       </property>
+       <property name="text">
+        <string>●  주차 공간이 있습니다.</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="floorCard">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>100</y>
+        <width>320</width>
+        <height>430</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <widget class="QLabel" name="lblFloorTitle">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>18</y>
+         <width>270</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Pretendard</family>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>층별 주차 현황</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lblFloorLegend">
+       <property name="geometry">
+        <rect>
+         <x>195</x>
+         <y>20</y>
+         <width>95</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Pretendard</family>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color:#6B717A;</string>
+       </property>
+       <property name="text">
+        <string>● 사용 가능</string>
+       </property>
+      </widget>
+      <widget class="QWidget" name="row8" native="true">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>62</y>
+         <width>280</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background:#F7F8FA; border-radius:9px;</string>
+       </property>
+       <widget class="QLabel" name="lblFloor8">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>5</y>
+          <width>55</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>8F</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSlot8">
+        <property name="geometry">
+         <rect>
+          <x>245</x>
+          <y>10</y>
+          <width>18</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblStatus8">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>5</y>
+          <width>140</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>10</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:#55A873;</string>
+        </property>
+        <property name="text">
+         <string>사용 가능</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="row7" native="true">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>106</y>
+         <width>280</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background:#F7F8FA; border-radius:9px;</string>
+       </property>
+       <widget class="QLabel" name="lblFloor7">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>5</y>
+          <width>55</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>7F</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSlot7">
+        <property name="geometry">
+         <rect>
+          <x>245</x>
+          <y>10</y>
+          <width>18</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblStatus7">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>5</y>
+          <width>140</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:#55A873;</string>
+        </property>
+        <property name="text">
+         <string>사용 가능</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="row6" native="true">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>150</y>
+         <width>280</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background:#F7F8FA; border-radius:9px;</string>
+       </property>
+       <widget class="QLabel" name="lblFloor6">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>5</y>
+          <width>55</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>6F</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSlot6">
+        <property name="geometry">
+         <rect>
+          <x>245</x>
+          <y>10</y>
+          <width>18</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblStatus6">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>5</y>
+          <width>140</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:#55A873;</string>
+        </property>
+        <property name="text">
+         <string>사용 가능</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="row5" native="true">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>194</y>
+         <width>280</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background:#F7F8FA; border-radius:9px;</string>
+       </property>
+       <widget class="QLabel" name="lblFloor5">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>5</y>
+          <width>55</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>5F</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSlot5">
+        <property name="geometry">
+         <rect>
+          <x>245</x>
+          <y>10</y>
+          <width>18</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblStatus5">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>5</y>
+          <width>140</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:#55A873;</string>
+        </property>
+        <property name="text">
+         <string>사용 가능</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="row4" native="true">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>238</y>
+         <width>280</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background:#F7F8FA; border-radius:9px;</string>
+       </property>
+       <widget class="QLabel" name="lblFloor4">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>5</y>
+          <width>55</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>4F</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSlot4">
+        <property name="geometry">
+         <rect>
+          <x>245</x>
+          <y>10</y>
+          <width>18</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblStatus4">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>5</y>
+          <width>140</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:#55A873;</string>
+        </property>
+        <property name="text">
+         <string>사용 가능</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="row3" native="true">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>282</y>
+         <width>280</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background:#F7F8FA; border-radius:9px;</string>
+       </property>
+       <widget class="QLabel" name="lblFloor3">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>5</y>
+          <width>55</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>3F</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSlot3">
+        <property name="geometry">
+         <rect>
+          <x>245</x>
+          <y>10</y>
+          <width>18</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblStatus3">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>5</y>
+          <width>140</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:#55A873;</string>
+        </property>
+        <property name="text">
+         <string>사용 가능</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="row2" native="true">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>326</y>
+         <width>280</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background:#F7F8FA; border-radius:9px;</string>
+       </property>
+       <widget class="QLabel" name="lblFloor2">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>5</y>
+          <width>55</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>2F</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSlot2">
+        <property name="geometry">
+         <rect>
+          <x>245</x>
+          <y>10</y>
+          <width>18</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblStatus2">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>5</y>
+          <width>140</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:#55A873;</string>
+        </property>
+        <property name="text">
+         <string>사용 가능</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="row1" native="true">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>370</y>
+         <width>280</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background:#F7F8FA; border-radius:9px;</string>
+       </property>
+       <widget class="QLabel" name="lblFloor1">
+        <property name="geometry">
+         <rect>
+          <x>15</x>
+          <y>5</y>
+          <width>55</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>1F</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblSlot1">
+        <property name="geometry">
+         <rect>
+          <x>245</x>
+          <y>10</y>
+          <width>18</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="lblStatus1">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>5</y>
+          <width>140</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Pretendard</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:#55A873;</string>
+        </property>
+        <property name="text">
+         <string>사용 가능</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="btnEntry">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>400</y>
+        <width>235</width>
+        <height>130</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>26</pointsize>
+        <weight>87</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>입차</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnExit">
+      <property name="geometry">
+       <rect>
+        <x>285</x>
+        <y>400</y>
+        <width>235</width>
+        <height>130</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>26</pointsize>
+        <weight>87</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>출차</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblEntryHint">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>550</y>
+        <width>490</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard Black</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color:#7A8088;</string>
+      </property>
+      <property name="text">
+       <string>입차 시 차량번호를 입력하면 주차 위치가 자동으로 배정됩니다.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="pageEntry">
+     <widget class="QLabel" name="lblEntryTitle">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>55</y>
+        <width>360</width>
+        <height>80</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>38</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>입차</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblEntryGuide">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>175</y>
+        <width>340</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>15</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color:#555B64;</string>
+      </property>
+      <property name="text">
+       <string>차량번호를 입력해주세요</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="leEntryCarNumber">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>220</y>
+        <width>360</width>
+        <height>70</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>22</pointsize>
+       </font>
+      </property>
+      <property name="maxLength">
+       <number>8</number>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="placeholderText">
+       <string>예: 1234</string>
+      </property>
+      <property name="clearButtonEnabled">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnEntryRequest">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>495</y>
+        <width>170</width>
+        <height>65</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>16</pointsize>
+        <weight>87</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>입차하기</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnEntryToHome">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>495</y>
+        <width>130</width>
+        <height>65</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>처음으로</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="pageEntryComplete">
+     <widget class="QLabel" name="lblEntryCompleteTitle">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>170</y>
+        <width>540</width>
+        <height>90</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>42</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color:#315FEA;</string>
+      </property>
+      <property name="text">
+       <string>입차 완료</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblTitle_2">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>18</y>
+        <width>300</width>
+        <height>38</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>20</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>PARKING TOWER</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="pageExit">
+     <widget class="QLabel" name="lblExitTitle">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>55</y>
+        <width>360</width>
+        <height>80</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>38</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>출차</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblEntryGuide_2">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>175</y>
+        <width>340</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>15</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color:#555B64;</string>
+      </property>
+      <property name="text">
+       <string>차량번호 뒤 4자리를 입력해주세요</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="leExitLastFour">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>220</y>
+        <width>310</width>
+        <height>65</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>22</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="maxLength">
+       <number>4</number>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="placeholderText">
+       <string>뒤 4자리</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnExitSearch">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>220</y>
+        <width>110</width>
+        <height>65</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>13</pointsize>
+        <weight>87</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>검색</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="listExitCars">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>320</y>
+        <width>300</width>
+        <height>165</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnExitRequest">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>495</y>
+        <width>170</width>
+        <height>65</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>16</pointsize>
+        <weight>87</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>출차하기</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnExitToHome">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>495</y>
+        <width>130</width>
+        <height>65</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>처음으로</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="pagePaymentComplete">
+     <widget class="QLabel" name="lblPaymentCompleteTitle">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>190</y>
+        <width>540</width>
+        <height>90</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>40</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color:#315FEA;</string>
+      </property>
+      <property name="text">
+       <string>정산 완료</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="pagePayment">
+     <widget class="QLabel" name="lblPaymentTitle">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>55</y>
+        <width>300</width>
+        <height>70</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>30</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>정산 화면</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblPaymentCarNumber">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>160</y>
+        <width>340</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblPaymentTime">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>205</y>
+        <width>340</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>13</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblPaymentFee">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>270</y>
+        <width>340</width>
+        <height>50</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>22</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnPaymentRequest">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>350</y>
+        <width>240</width>
+        <height>75</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>20</pointsize>
+        <weight>87</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>정산하기</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnPaymentToExit">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>495</y>
+        <width>130</width>
+        <height>65</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>뒤로가기</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnPaymentToHome">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>495</y>
+        <width>170</width>
+        <height>65</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Pretendard</family>
+        <pointsize>13</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>처음으로</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>960</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

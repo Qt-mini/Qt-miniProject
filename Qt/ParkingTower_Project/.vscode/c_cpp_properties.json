@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Qt5-UCRT64",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/msys64/ucrt64/include",
+                "C:/msys64/ucrt64/include/QtCore",
+                "C:/msys64/ucrt64/include/QtGui",
+                "C:/msys64/ucrt64/include/QtWidgets",
+                "C:/msys64/ucrt64/include/QtMultimedia",
+                "C:/msys64/ucrt64/include/QtMultimediaWidgets",
+                "C:/msys64/ucrt64/include/QtSerialPort"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
