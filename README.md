@@ -444,7 +444,6 @@ ParkingSystem/
 | 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
 | :---: | :--- | :--- |
 | `void` | `LED_Init(void)` | LED 제어용 GPIO 핀 초기화 |
-| `void` | `LED_SetFloor(uint8_t floor, uint8_t state)` | 특정 층(1~8)의 비트를 세트/클리어하고 해당 GPIO 핀 점등(1)/소등(0) |
 | `void` | `LED_UpdateFromSlots(void)` | `g_slot_occupancy_mask` 비트마스크를 기반으로 8개 층 점유 LED 상태 일괄 반영 |
 
 ---
@@ -460,9 +459,7 @@ ParkingSystem/
 | 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
 | :---: | :--- | :--- |
 | `void` | `init_servo_motor(void)` | 서보모터 PWM 제어를 위한 타이머 및 핀 초기화 |
-| `void` | `Servo_OpenBarrier(void)` | TIM2_CH1 PWM 펄스를 90°(약 2.0ms)로 변경하여 차단봉 개방 |
-| `void` | `Servo_CloseBarrier(void)` | TIM2_CH1 PWM 펄스를 0°(약 1.0ms)로 변경하여 차단봉 하강 |
-| `void` | `Servo_MoveBarrier(void)` | `g_is_barrier_open` 값에 따라 개방 또는 하강 동작 수행 |
+| `void` | `Servo_MoveBarrier(void)` | TIM2_CH1 PWM 펄스를 90°(약 2.0ms)로 변경하여 차단봉 개방 후 3초 타이머 후 펄스를 0°(약 1.0ms)로 변경하여 차단봉 하강 |
 
 ---
 
