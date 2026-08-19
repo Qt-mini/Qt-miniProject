@@ -468,8 +468,7 @@ ParkingSystem/
 ####  함수 목록
 | 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
 | :---: | :--- | :--- |
-| `void` | `Delay_ms(uint32_t ms)` | SysTick 또는 하드웨어 타이머 기반 밀리초(ms) 단위 지연 |
-| `void` | `Delay_us(uint32_t us)` | 초음파 트리거 및 정밀 제어를 위한 마이크로초(µs) 단위 지연 |
+| `void` | `TIM3_Delay(int time_ms)` | 하드웨어 타이머 3번 기반 밀리초(ms) 단위 지연 |
 
 
 <div style="page-break-after: always;"></div>
