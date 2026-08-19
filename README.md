@@ -4,8 +4,7 @@
 
 - [주요 기능](#주요-기능)
 - [하드웨어 구성(파트리스트/핀맵/회로도)](#하드웨어-구성-파트리스트-핀-맵-회로도)
-- [세부 구현 사항](#세부-구현-사항)
-- [파일 목록](#파일-목록)
+- [세부 구현 목록](#세부-구현-목록)
 - [UI 구현 예상도](#ui-구현-예상도)
 - [시나리오(입차/만차/출차)](#시나리오-0-시스템-시작-시-초기-동기화)
 - [하드웨어 소프트웨어 역할 분담](#하드웨어-및-소프트웨어-역할-분담)
@@ -46,7 +45,7 @@
 
 ## 2. 핀 맵
 
-| **구분** | **부품 / 기능** | **STM32 핀 번호** | **설정 / 페리페럴** | **역할 및 비고** |
+| **구분** | **부품 / 기능** | **STM32 핀 번호** | **설정모드** | **역할** |
 | --- | --- | --- | --- | --- |
 | **서보모터** | PWM | **PA0** | TIM2_CH1 | 차단기(차단봉) 제어 (50Hz PWM) |
 | **초음파센서** | Trig | **PB4** | GPIO Output | 10µs 거리 측정 트리거 신호 |
@@ -65,61 +64,36 @@
 <br>
 <br>
 
-# 세부 구현 사항
+# 세부 구현 목록
 
 ## STM32 M4
 
 - 시스템은 1층부터 8층까지 총 8개의 주차 공간을 관리한다.
-- 각 층의 주차 공간 점유 상태를 LED 8개를 이용하여 표시한다.
+    - 각 층의 주차 공간 점유 상태를 LED 8개를 이용하여 표시한다.
 - 차량이 설정 거리 이내로 접근하면 초음파 센서를 이용하여 차량의 접근을 감지한다.
-- 차량 접근이 감지되면 STM32는 현재 빈 주차 공간의 존재 여부를 확인한다.
-- STM32로부터 빈 주차 공간이 존재함을 확인한 경우 Qt는 차량번호 입력 및 입차 요청 기능을 활성화한다.
-- 만차 상태에서는 차단기를 닫힌 상태로 유지한다.
-- 입차 요청을 받으면 STM32는 빈 주차 공간 중 가장 낮은 층을 자동으로 배정한다.
-- 주차 공간 배정이 완료되면 서보 모터를 동작 시켜 차단기를 개방한다.
+    - 차량 접근이 감지되면 STM32는 현재 빈 주차 공간의 존재 여부를 확인한다.
+    - STM32로부터 빈 주차 공간이 존재함을 확인한 경우 Qt는 차량번호 입력(xxx가xxxx) 및 입차 요청 기능을 활성화한다.
+    - 입차 요청을 받으면 STM32는 빈 주차 공간 중 가장 낮은 층을 자동으로 배정한다.
+    - 주차 공간 배정이 완료되면 서보 모터를 동작 시켜 차단기를 개방한다.
 - 차단기는 개방 후 일정 시간이 지나면 자동으로 닫히면 배정된 층의 LED를 점등한다.
+- 만차 상태에서는 차단기를 닫힌 상태로 유지한다.
 
 ## QT
 
-- 사용자는 입차 시 Qt UI에 차량번호 뒤 4자리를 입력하고 입차를 요청한다.
-- Qt는 입차가 완료된 차량의 차량번호, 배정된 주차 층 및 입차 시간을 저장한다.
-- 출차 시 사용자는 Qt UI에 차량번호 뒤 4자리를 입력하고 출차를 요청한다.
-- 시스템은 입력된 차량번호를 검색하여 해당 차량의 주차 층 및 입차 정보를 확인한다.
-- Qt는 저장된 입차 시간과 현재 시간을 이용하여 총 주차 시간을 계산한다.
-- Qt는 총 주차 시간을 기반으로 주차 요금을 계산하여 사용자에게 표시한다.
-- 사용자가 정산 버튼을 누르면 해당 차량의 정산을 완료 상태로 처리한다.
-- 정산이 완료되면 서보 모터를 동작시켜 차단기를 개방한다.
-- 출차가 완료되면 해당 차량이 주차되어 있던 층의 LED를 소등한다.
+- 사용자는 입차 시 Qt UI에 차량번호(xxx가xxxx) 8자리를 입력하고 입차를 요청한다.
+    - Qt는 입차가 완료된 차량의 차량번호, 배정된 주차 층 및 입차 시간을 저장한다.
+
+- 출차 시 사용자는 Qt UI에 차량번호(xxx가xxxx) 8자리를 입력하고 출차를 요청한다.
+    - Qt는 입력된 차량번호를 검색하여 해당 차량의 주차 층 및 입차 정보를 확인한다.
+    - Qt는 저장된 입차 시간과 현재 시간을 이용하여 총 주차 시간을 계산한다.
+    - Qt는 총 주차 시간을 기반으로 주차 요금을 계산하여 사용자에게 표시한다.
+    - 사용자가 정산 버튼을 누르면 해당 차량의 정산을 완료 상태로 처리한다.
+    - 정산이 완료되면 서보 모터를 동작시켜 차단기를 개방한다.
+    - 출차가 완료되면 해당 차량이 주차되어 있던 층의 LED를 소등한다.
 - STM32로부터 만차 상태를 확인한 경우 Qt는 만차 상태를 표시하고 차량번호 입력 및 입차 요청 기능을 비활성화한다.
 - 출차가 완료되면 Qt는 해당 차량의 주차 정보를 삭제 또는 출차 완료 상태로 처리하고,  STM32는 해당 주차 슬롯을 비어있음 상태로 변경한다.
 - STM32와 Qt는 UART Serial 통신을 이용하여 주차 상태와 입·출차 관련 명령 및 처리 결과를 교환한다.
 
-
-# 파일 목록
-
-```c
-QT
-Parking_UI
-├── Parking_UI.pro            # [1] Qt 프로젝트 설정 파일 (serialport 모듈 추가)
-├── main.cpp                  # [2] 앱 실행 시작점 (Main 함수)
-├── mainwindow.ui             # [3] UI 디자인 파일 (버튼, 테이블, 로그창 배치)
-├── mainwindow.h              # [4] UI 이벤트 처리 및 대시보드 헤더
-├── mainwindow.cpp            # [5] UI 구현, 요금 계산
-├── serialworker.h            # [6] QThread 전용 시리얼 통신 클래스 헤더
-└── serialworker.cpp          # [7] 시리얼 포트 데이터 비동기 송수신 구현
-```
-
-```c
-STM32 M4
-hardware
-├── main.h                 # 핀 정의(GPIO Pin) 및 전역 헤더
-├── parking_hw.h           # [선택] 초음파/서보/LED 제어 함수 선언
-├── main.c                 # [1] 메인 루프, 초기화, 센서 감지 및 처리
-├── exception.c            # [2] UART 수신 및 EXTI 비상정지 인터럽트 핸들러
-├── servo_motor.c          # [3] 차단기 서보모터 구현
-├── ultrasonic.c           # [4] 초음파 거리계산 구현
-└── led.c                  # [5] 8개 LED Control   
-```
 
 # UI 구현 예상도
 ![FSM](./image/UI_ex.jpg)
@@ -142,11 +116,11 @@ hardware
 
 
 # UART 통신 프로토콜
-> 종단 문자(EOL): `\r\n` (CR+LF)
-문자 인코딩: ASCII
-데이터/패리티/정지비트: `8-N-1`
-통신 속도: `115200 bps`
-> 
+- 종단 문자(EOL): `\r\n` (CR+LF)
+- 문자 인코딩: ASCII
+- 데이터/패리티/정지비트: `8-N-1`
+- 통신 속도: `115200 bps`
+
 
 ### Qt → STM32 (명령 전송)
 
@@ -327,26 +301,25 @@ S:<8bit>
 
 # 소프트웨어 상세 설계
 
-## 구현 함수 목록
+## 시스템 역할 및 책임 
 
-### 1. 시스템 역할 및 책임 (Separation of Concerns)
-
-#### [주요 전역 변수 및 자료구조]
+### [프로젝트 디렉토리 구조 및 책임]
 
 ```
 hardware/
 ├── header/
 │   ├── main.h             // 시스템 전역 설정, 핀 정의, 기본 헤더
-│   └── parking_hw.h       // 서보/초음파/LED/슬롯 제어 함수 원형 선언
+│   ├── ultrasonic.h       // 초음파 센서 함수 선언
+│   └── device_driver.h    // 서보모터/LED/슬롯 제어 함수 원형 선언
 └── Src/
     ├── main.c             // 시스템 초기화 및 메인 제어 루프
     ├── uart.c             // UART 수신/송신 인터럽트 및 명령 파서
     ├── servo_motor.c      // 차단기 PWM 제어 및 자동 닫힘 타이머
     ├── ultrasonic.c       // 초음파 센서 거리 측정 로직
+    ├── timer.c            // 딜레이 타이머 구현
+    ├── led_slot.c         // 자동차 주차타워 슬롯 관리
     └── led.c              // 8개 층 점유 LED 제어
 ```
-
-#### [주요 클래스 및 멤버 변수/함수]
 
 ```
 ParkingSystem/
@@ -359,36 +332,34 @@ ParkingSystem/
 └── serialworker.cpp       // QSerialPort 비동기 데이터 송수신 구현
 ```
 
-```c
-// 8개 슬롯의 점유 상태 (Bit 0 = 1층, ..., Bit 7 = 8층 / 1: 점유, 0: 빈자리)
-uint8_t g_slot_occupancy_mask = 0x00;
-
-// 초음파 센서 관련 변수
-uint16_t g_measured_distance_cm = 0;
-uint8_t g_car_detected_flag = 0;
-
-// 차단기 동작 타이머 (3초 딜레이 제어)
-uint32_t g_barrier_timer = 0;
-uint8_t g_is_barrier_open = 0;
-
-// UART 버퍼
-char g_rx_buffer[64];
-uint8_t g_rx_index = 0;
-```
+<br>
+<br>
 
 
+##  STM32 (C) 명세서
 
-
-#  STM32 (C) 명세서
-
-### 📌 전역 변수 정의
-| 소스 파일 | 변수 타입 | 변수명 | 초기값 | 설명 |
+###  전역변수 정의
+| 소스 파일 | 변수 타입 / 스코프 | 변수명 | 초기값 | 설명 |
 | :--- | :--- | :--- | :---: | :--- |
-| `led_slot.c` | `static unsigned int` | `parking_tower` | `0b00000000` | 8개 층 주차 슬롯 점유 상태 비트마스크 |
+| `led_slot.c` | `volatile uint8_t` | `g_slot_occupancy_mask` | `0b00000000` | 8개 층 주차 슬롯 점유 상태 비트마스크 |
+| `servo_motor.c` | `volatile uint8_t` | `g_is_barrier_open` | `0` | 차단기 개폐 상태 플래그 |
+| `uart.c` | `extern volatile uint8_t` | `g_slot_occupancy_mask` | - | 주차 슬롯 점유 상태 비트마스크 |
+| `uart.c` | `extern volatile uint8_t` | `g_is_barrier_open` | - | 차단기 개폐 상태 플래그 |
+| `uart.c` | `static char` | `s_rx_buffer[UART_RX_BUFFER_SIZE]` | - | USART2 인터럽트 수신용 임시 링/문자 버퍼 |
+| `uart.c` | `static uint8_t` | `s_rx_index` | `0` | USART2 수신 버퍼 인덱스 포인터 |
+| `uart.c` | `static char` | `s_cmd_buffer[UART_RX_BUFFER_SIZE]` | - | 파싱 대기 중인 완성된 단일 명령어 버퍼 |
+| `uart.c` | `static volatile bool` | `s_cmd_ready` | `false` | 개행 문자 수신으로 명령어 준비 완료 플래그 |
+| `ultrasonic.c` | `volatile uint32_t` | `echo_rise` | `0` | Echo 핀 Rising Edge 캡처 시점의 카운터 값 |
+| `ultrasonic.c` | `volatile uint32_t` | `echo_fall` | `0` | Echo 핀 Falling Edge 캡처 시점의 카운터 값 |
+| `ultrasonic.c` | `volatile uint8_t` | `echo_done` | `0` | Echo 펄스 측정 완료 플래그 (1: 완료, 0: 미완료) |
+| `ultrasonic.c` | `volatile uint8_t` | `echo_state` | `ECHO_WAIT_RISE` | Echo 신호 캡처 상태 머신 (Rising / Falling 대기) |
+| `ultrasonic.c` | `volatile CarState` | `car_state` | `CAR_NONE` | 최종 판정된 차량 감지 상태 (`CAR_NONE` / `CAR_DETECTED`) |
+| `ultrasonic.c` | `uint8_t` | `detect_count` | `0` | 채터링 방지용 연속 감지(≤150mm) 누적 카운트 |
+| `ultrasonic.c` | `uint8_t` | `release_count` | `0` | 채터링 방지용 연속 해제(≥200mm) 누적 카운트 |
 
 ---
 
-### 📌 함수 정의
+###  함수 정의
 | 소스 파일 | 반환 타입 | 함수 원형 (매개변수) | 상세 동작 설명 |
 | :--- | :---: | :--- | :--- |
 | `main.c` | `int` | `main(void)` | 하드웨어 초기화 후 메인 루프에서 초음파 감지 및 차단기 타이머 폴링 |
@@ -410,12 +381,21 @@ uint8_t g_rx_index = 0;
 | `uart.c` | `void` | `UART2_GetCommand(char *out_buf)` | 수신 완료된 명령어 버퍼를 복사하고 수신 준비 플래그를 `false`로 리셋 |
 | `uart.c` | `void` | `UART_ParseCommand(char *cmd)` | 수신 명령어(`I`, `O:<floor>`, `?`)를 파싱하여 슬롯 및 차단기 제어 후 응답 전송 |
 | `uart.c` | `void` | `USART2_IRQHandler(void)` | RXNE 인터럽트 시 수신 문자를 버퍼에 적재하고, 개행 문자(`\r`, `\n`) 감지 시 완료 플래그 활성화 |
-
+| `ultrasonic.c` | `static void` | `Ultrasonic_Trig_Init(void)` | PB4 핀을 범용 출력(Push-Pull, 초기 LOW)으로 설정하여 초음파 TRIG 핀 초기화 |
+| `ultrasonic.c` | `static void` | `TIM5_Trig_Init(void)` | 100ms 주기로 10µs의 TRIG 펄스를 발생시키기 위한 TIM5(1MHz, Update/CC1 인터럽트) 초기화 |
+| `ultrasonic.c` | `static void` | `TIM4_Echo_Init(void)` | PB6(AF2/TIM4_CH1)을 Input Capture 모드로 설정하여 Echo 펄스 폭 측정 타이머 초기화 |
+| `ultrasonic.c` | `void` | `Ultrasonic_Init(void)` | GPIOB 클럭 활성화 및 TRIG 핀, TIM5(트리거), TIM4(에코 캡처)를 일괄 초기화 |
+| `ultrasonic.c` | `void` | `TIM5_IRQHandler(void)` | TIM5 Update 시 PB4를 HIGH로 올리고, 10µs 후 Compare 시 LOW로 내려 트리거 펄스 출력 및 측정 상태 리셋 |
+| `ultrasonic.c` | `void` | `TIM4_IRQHandler(void)` | Echo 신호의 Rising/Falling Edge를 순차적으로 캡처하여 시간(`echo_rise`, `echo_fall`) 저장 및 완료 플래그 갱신 |
+| `ultrasonic.c` | `void` | `Ultrasonic_UpdateCarState(void)` | 캡처된 Echo 폭(오버플로우 보정 포함)으로 거리(mm)를 계산하고, 히스테리시스 필터링(3회 연속 판정)을 적용하여 `car_state` 갱신 |
+| `ultrasonic.c` | `CarState` | `Ultrasonic_GetCarState(void)` | 현재 확정된 차량 감지 상태(`car_state`) 반환 |
 ---
+<br>
+<br>
 
 # Qt 주차 관리 시스템 (C++) 명세서
 
-### 📌 클래스 멤버 변수 정의
+### 클래스 멤버 변수 정의
 | 소스 파일 | 클래스 | 접근 지정자 | 타입 | 변수명 | 초기값 | 설명 |
 | :--- | :--- | :---: | :--- | :--- | :---: | :--- |
 | `car.cpp` | `Car` | `private` | `QString` | `carNumber` | - | 차량 번호 |
@@ -426,9 +406,9 @@ uint8_t g_rx_index = 0;
 
 ---
 
-### 📌 클래스 멤버 함수 정의
+### 클래스 멤버 함수 정의
 
-#### 🔹 `Car` 클래스 (`car.cpp`)
+#### `Car` 클래스 (`car.cpp`)
 | 접근 지정자 | 반환 타입 | 함수명 (매개변수) | 상세 동작 설명 |
 | :---: | :---: | :--- | :--- |
 | `public` | 생성자 | `Car(const QString &carNumber, int floor)` | 차량번호와 층을 저장하고 현재 시간을 입차시간으로 설정 |
@@ -439,7 +419,7 @@ uint8_t g_rx_index = 0;
 | `public` | `QDateTime` | `getExitTime()` | 출차시간 반환 |
 | `public` | `void` | `setExitTime(const QDateTime &exitTime)` | 출차시간 설정 |
 
-#### 🔹 `ParkingManager` 클래스 (`parkingmanager.cpp`)
+#### `ParkingManager` 클래스 (`parkingmanager.cpp`)
 | 접근 지정자 | 반환 타입 | 함수명 (매개변수) | 상세 동작 설명 |
 | :---: | :---: | :--- | :--- |
 | `public` | `bool` | `addCar(const QString &carNumber, int floor)` | `Car` 객체를 생성하여 주차 목록(`cars`)에 추가 |
@@ -457,7 +437,7 @@ uint8_t g_rx_index = 0;
 | `public` | `void` | `loadParkingCars()` | CSV 파일에서 미출차 차량 데이터를 읽어 복원 |
 | `public` | `quint8` | `getStoredSlotStatus()` | 복원된 차량들의 층 정보를 기반으로 Qt 측 8비트 슬롯 상태 생성 |
 
-#### 🔹 `SerialManager` 클래스 (`serialmanager.cpp` / `serialmanager.h`)
+#### `SerialManager` 클래스 (`serialmanager.cpp` / `serialmanager.h`)
 | 분류 | 반환 타입 | 함수명 / 시그널 (매개변수) | 상세 동작 설명 |
 | :---: | :---: | :--- | :--- |
 | `public` | 생성자 | `SerialManager(QObject *parent)` | `QSerialPort`의 `readyRead` 시그널 연결 |
@@ -473,7 +453,7 @@ uint8_t g_rx_index = 0;
 | **`signals`** | `signal` | `parkedReceived(int floor)` | 입차 완료 신호 및 배정 층 수신 알림 |
 | **`signals`** | `signal` | `exitedReceived()` | 출차 완료 신호(`E`) 수신 알림 |
 
-#### 🔹 `MainWindow` 클래스 (`mainwindow.cpp`)
+#### `MainWindow` 클래스 (`mainwindow.cpp`)
 | 접근 지정자 | 반환 타입 | 함수명 (매개변수) | 상세 동작 설명 |
 | :---: | :---: | :--- | :--- |
 | `public` | 생성자 | `MainWindow(QWidget *parent)` | UI 및 시그널/슬롯 초기화, CSV 주차 정보 복원 |
