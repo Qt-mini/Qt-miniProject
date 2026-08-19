@@ -53,16 +53,10 @@
 | **LED 8개** | LED 1~8 | **PC0 ~ PC7** | GPIO Output | 8개 주차 공간 점유 상태 표시 |
 
 
-<br>
-<br>
-<br>
-
 ## 3. 하드웨어 회로도
 [PDF 문서 열기](./image/qt_design.pdf)
 
-<br>
-<br>
-<br>
+<div style="page-break-after: always;"></div>
 
 # 세부 구현 목록
 
@@ -98,6 +92,7 @@
 # UI 구현 예상도
 ![FSM](./image/UI_ex.jpg)
 
+<div style="page-break-after: always;"></div>
 
 # 하드웨어 및 소프트웨어 역할 분담
 ```c
@@ -132,8 +127,6 @@
 
 ### STM32 → Qt (이벤트 및 응답 전송)
 
-
-
 | 명령어 | 매개변수 | 설명 | 예시 |
 | --- | --- | --- | --- |
 | `R` | 없음 | 부팅 완료 + 슬롯 상태 로드 완료 + UART 준비 완료(Ready) | `R\r\n` |
@@ -142,6 +135,9 @@
 | `P:<floor>` | `<floor>` (1~8) | 입차 성공: 배정된 최저 층 번호 응답 (LED 점등, 차단기 개방 포함) | `P:1\r\n` |
 | `E` | 없음 | 출차 처리 완료: 해당 층 비움 처리 완료 (LED 소등, 차단기 개방 포함) | `E\r\n` |
 | `E:<code>` | `<code>` | 잘못된 요청/상태 등의 에러 코드 | `E:2\r\n` |
+
+
+<div style="page-break-after: always;"></div>
 
 ## 프로토콜 명령어 총괄표
 
@@ -193,6 +189,9 @@
     - `E:3` : 만차 에러 (빈 슬롯 없음)
     - `E:0` : 정의되지 않은 알 수 없는 명령 수신
 </aside>
+
+<div style="page-break-after: always;"></div>
+
 
 ### 시나리오 0. 시스템 시작 시 초기 동기화
 
@@ -258,6 +257,8 @@
    │                             │                                    ├─ 서보모터 차단기 자동 닫힘
 ```
 
+<div style="page-break-after: always;"></div>
+
 ## 상황별 통신 흐름 시나리오 및 예시 데이터
 
 ```c
@@ -297,7 +298,7 @@ E:<floor>
 S:<8bit>
 ```
 
-
+<div style="page-break-after: always;"></div>
 
 # 소프트웨어 상세 설계
 
@@ -335,6 +336,7 @@ ParkingSystem/
 <br>
 <br>
 
+<div style="page-break-after: always;"></div>
 
 ##  STM32 (C) 명세서
 
@@ -386,6 +388,8 @@ ParkingSystem/
 
 ---
 
+<div style="page-break-after: always;"></div>
+
 #### 3. `ultrasonic.c`
 
 #### 전역 변수
@@ -432,6 +436,8 @@ ParkingSystem/
 
 ---
 
+<div style="page-break-after: always;"></div>
+
 #### 5. `led.c`
 
 함수 목록
@@ -468,8 +474,8 @@ ParkingSystem/
 | `void` | `Delay_ms(uint32_t ms)` | SysTick 또는 하드웨어 타이머 기반 밀리초(ms) 단위 지연 |
 | `void` | `Delay_us(uint32_t us)` | 초음파 트리거 및 정밀 제어를 위한 마이크로초(µs) 단위 지연 |
 
-<br>
-<br>
+
+<div style="page-break-after: always;"></div>
 
 # Qt 주차 관리 시스템 (C++) 명세서
 
@@ -514,6 +520,8 @@ ParkingSystem/
 | `public` | `bool` | `saveParkingRecord(const QString &carNumber)` | 입/출차 정보를 CSV 파일에 저장 |
 | `public` | `void` | `loadParkingCars()` | CSV 파일에서 미출차 차량 데이터를 읽어 복원 |
 | `public` | `quint8` | `getStoredSlotStatus()` | 복원된 차량들의 층 정보를 기반으로 Qt 측 8비트 슬롯 상태 생성 |
+
+<div style="page-break-after: always;"></div>
 
 #### `SerialManager` 클래스 (`serialmanager.cpp` / `serialmanager.h`)
 | 분류 | 반환 타입 | 함수명 / 시그널 (매개변수) | 상세 동작 설명 |
